@@ -1,9 +1,19 @@
+import os
 import logging
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+
+# Load .env file automatically
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(env_path):
+    with open(env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if "=" in line and not line.startswith("#"):
+                k, v = line.strip().split("=", 1)
+                os.environ[k.strip()] = v.strip()
 
 from database import engine, get_db, Base, SessionLocal
 import models

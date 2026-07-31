@@ -6,6 +6,15 @@ from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger("lifegrid.gemini")
 
+# Load .env file automatically
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(env_path):
+    with open(env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if "=" in line and not line.startswith("#"):
+                k, v = line.strip().split("=", 1)
+                os.environ[k.strip()] = v.strip()
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 async def query_gemini(prompt: str, json_schema_desc: Optional[str] = None) -> str:
@@ -15,7 +24,7 @@ async def query_gemini(prompt: str, json_schema_desc: Optional[str] = None) -> s
     if not GEMINI_API_KEY:
         return ""
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
     
     full_prompt = prompt
     if json_schema_desc:
