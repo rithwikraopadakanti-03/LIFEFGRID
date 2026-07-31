@@ -89,8 +89,8 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
               <PhoneCall className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base text-white">LifeGrid Voice AI Assistant</h3>
-              <p className="text-xs text-slate-400">Autonomous Multi-Lingual Citizen Emergency Call</p>
+              <h3 className="font-extrabold text-base text-white">OmniDimension Voice AI Engine</h3>
+              <p className="text-xs text-slate-400">Autonomous Low-Latency Conversational Emergency Agent</p>
             </div>
           </div>
 

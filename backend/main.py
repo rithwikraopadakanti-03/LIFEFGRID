@@ -22,6 +22,8 @@ import gemini_service
 import agents
 import seed_data
 import auth
+import twilio_service
+import omnidimension_service
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("lifegrid.main")
@@ -146,23 +148,24 @@ def get_incident(incident_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/incidents/sos", response_model=schemas.IncidentResponse)
 async def trigger_quick_sos(
+    background_tasks: BackgroundTasks,
     latitude: float = 16.5095,
     longitude: float = 80.6455,
-    reporter_name: str = "Citizen SOS",
+    reporter_name: str = "Rithwik Rao",
     db: Session = Depends(get_db)
 ):
     """Instant 1-Tap SOS Panic Button Trigger"""
     sos_inc = models.Incident(
         title="SOS PANIC BUTTON ACTIVATED",
         category="Medical Emergency",
-        description="Citizen pressed 1-Tap Emergency SOS Panic Button. Immediate dispatch required.",
+        description="Citizen Rithwik Rao pressed 1-Tap Emergency SOS Panic Button. Immediate dispatch required.",
         latitude=latitude,
         longitude=longitude,
         address="Live GPS Coordinates",
         urgency="CRITICAL",
         status="AI_VERIFIED",
         reporter_name=reporter_name,
-        reporter_phone="+91 98765 43210",
+        reporter_phone="+918121985059",
         is_verified=True,
         confidence_score=0.99,
         severity_score=10,
@@ -183,14 +186,30 @@ async def trigger_quick_sos(
 
     t0 = models.TimelineEvent(
         incident_id=sos_inc.id,
-        agent_name="LifeGrid Panic SOS System",
-        action="SOS Signal Received",
-        details="1-Tap Emergency Panic button triggered. Coordinates locked.",
+        agent_name="OmniDimension Voice AI Agent",
+        action="Emergency Voice Agent Dispatched",
+        details="1-Tap Emergency Panic button triggered. OmniDimension Realtime Voice AI agent call initiated to +918121985059.",
         status_change="AI_VERIFIED"
     )
     db.add(t0)
     db.commit()
     db.refresh(sos_inc)
+
+    # Dispatch OmniDimension Realtime Conversational Voice Agent call
+    background_tasks.add_task(
+        omnidimension_service.dispatch_omnidimension_call,
+        "+918121985059",
+        "en",
+        {"incident_id": sos_inc.id, "urgency": "CRITICAL", "reporter": "Rithwik Rao"}
+    )
+
+    # Also trigger Twilio PSTN backup
+    background_tasks.add_task(
+        twilio_service.make_emergency_call,
+        "+918121985059",
+        "Emergency SOS Alert! LifeGrid AI OmniDimension Agent has logged your emergency. Response teams dispatched."
+    )
+
     return sos_inc
 
 
