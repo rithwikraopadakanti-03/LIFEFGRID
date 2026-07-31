@@ -1,0 +1,301 @@
+import os
+import logging
+from sqlalchemy.orm import Session
+from datetime import datetime
+from database import engine, SessionLocal, Base, DB_PATH
+from models import (
+    User, Incident, TimelineEvent, Resource, WeatherMetric,
+    HealthMetric, WaterMetric, InfrastructureMetric, DigitalTwinZone, VoiceCallLog, AlertNotification, ChatMessage
+)
+import auth
+
+logger = logging.getLogger("lifegrid.seed")
+
+def seed_database(db: Session):
+    # Recreate tables safely
+    Base.metadata.create_all(bind=engine)
+
+    if db.query(User).count() > 0:
+        logger.info("Database users already seeded. Skipping.")
+        return
+
+    logger.info("Seeding LifeGrid AI v2.5 multi-role users & emergency dataset...")
+
+    # Clear any residual tables if empty
+    db.query(DigitalTwinZone).delete()
+    db.query(Resource).delete()
+    db.query(Incident).delete()
+    db.commit()
+
+    # 1. Seed Users
+    users = [
+        User(
+            email="citizen@lifegrid.ai",
+            password_hash=auth.hash_password("password123"),
+            full_name="Rithwik Rao",
+            phone="+91 98765 43210",
+            role="CITIZEN",
+            address="Flat 402, Riverbank Apartments, Ward 11",
+            emergency_contacts=[{"name": "Sujata Rao", "relation": "Family", "phone": "+91 98765 43211"}]
+        ),
+        User(
+            email="fire@lifegrid.ai",
+            password_hash=auth.hash_password("password123"),
+            full_name="Capt. Vikram Singh",
+            phone="+91 94400 10101",
+            role="EMERGENCY_TEAM",
+            team_department="FIRE",
+            address="District Main Fire Station HQ"
+        ),
+        User(
+            email="police@lifegrid.ai",
+            password_hash=auth.hash_password("password123"),
+            full_name="Inspector Rajesh Varma",
+            phone="+91 94400 10000",
+            role="EMERGENCY_TEAM",
+            team_department="POLICE",
+            address="Central Police Commissionerate"
+        ),
+        User(
+            email="ambulance@lifegrid.ai",
+            password_hash=auth.hash_password("password123"),
+            full_name="Dr. Anita Reddy (ALS Lead)",
+            phone="+91 94400 10808",
+            role="EMERGENCY_TEAM",
+            team_department="AMBULANCE",
+            address="ALS Unit 108 Fleet Base"
+        ),
+        User(
+            email="hospital@lifegrid.ai",
+            password_hash=auth.hash_password("password123"),
+            full_name="Dr. K. Srinivas (ER Chief)",
+            phone="+91 94400 88888",
+            role="EMERGENCY_TEAM",
+            team_department="HOSPITAL",
+            address="District General Hospital Trauma ER"
+        ),
+        User(
+            email="drf@lifegrid.ai",
+            password_hash=auth.hash_password("password123"),
+            full_name="Cmdr. Arjun Rao",
+            phone="+91 94400 99999",
+            role="EMERGENCY_TEAM",
+            team_department="DISASTER_RESPONSE",
+            address="Disaster Rescue Battalion Base"
+        )
+    ]
+    db.add_all(users)
+    db.commit()
+
+    # 2. Resources
+    resources = [
+        Resource(
+            name="District General Government Hospital",
+            type="Hospital",
+            latitude=16.5120,
+            longitude=80.6520,
+            address="M.G. Road, Sector 1, Central District",
+            contact_number="+91 866 2471001",
+            capacity=450,
+            current_occupancy=320,
+            status="AVAILABLE",
+            details={"icu_beds_available": 18, "ventilators": 12, "trauma_unit": True}
+        ),
+        Resource(
+            name="Central High School Flood Relief Shelter #1",
+            type="Shelter",
+            latitude=16.5180,
+            longitude=80.6440,
+            address="School Road, Ward 12",
+            contact_number="+91 98480 11223",
+            capacity=800,
+            current_occupancy=140,
+            status="AVAILABLE",
+            details={"food_supplies": "3 Days", "clean_water": "15,000 Liters"}
+        ),
+        Resource(
+            name="ALS Rapid Ambulance Unit 108-A1",
+            type="Ambulance",
+            latitude=16.5080,
+            longitude=80.6490,
+            address="Stationed at Sector 2 Junction",
+            contact_number="+91 108",
+            capacity=2,
+            current_occupancy=0,
+            status="AVAILABLE",
+            details={"type": "Advanced Life Support", "oxygen": True}
+        ),
+        Resource(
+            name="District Main Fire & Rescue Station",
+            type="FireStation",
+            latitude=16.5040,
+            longitude=80.6580,
+            address="Fire Station Road, East Zone",
+            contact_number="+91 101",
+            capacity=50,
+            current_occupancy=10,
+            status="AVAILABLE",
+            details={"fire_tenders": 6, "boat_rescue_teams": 4}
+        ),
+        Resource(
+            name="Central District Police Control Room",
+            type="Police",
+            latitude=16.5100,
+            longitude=80.6460,
+            address="Police Commissionerate HQ",
+            contact_number="+91 100",
+            capacity=200,
+            current_occupancy=40,
+            status="AVAILABLE",
+            details={"patrol_cars_active": 14}
+        )
+    ]
+    db.add_all(resources)
+
+    # 3. Weather
+    weather = WeatherMetric(
+        location_name="Krishna River Basin Metro Zone",
+        latitude=16.5062,
+        longitude=80.6480,
+        temperature_c=31.5,
+        humidity_pct=89.0,
+        rainfall_mm=78.5,
+        wind_speed_kmh=42.0,
+        flood_probability=82.5,
+        heat_index_c=38.2,
+        storm_alert_level="SEVERE",
+        forecast_summary="Heavy downpour associated with coastal depression. Flash flood warning active."
+    )
+    db.add(weather)
+
+    # 4. Health Metrics
+    health_items = [
+        HealthMetric(
+            district_name="Central Metro Zone",
+            disease_name="Dengue Fever",
+            active_cases=142,
+            new_cases_24h=18,
+            hospital_bed_occupancy_pct=74.5,
+            medicine_stock_pct=88.0,
+            outbreak_risk_level="MODERATE",
+            recovery_rate_pct=92.4,
+            emergency_cases=12,
+            ai_medical_advice="Deploy fogging vehicles in Sectors 2 & 4."
+        )
+    ]
+    db.add_all(health_items)
+
+    # 5. Water Metrics
+    water_items = [
+        WaterMetric(
+            station_name="Krishna River Intake Station A1",
+            ph_level=7.2,
+            turbidity_ntu=18.4,
+            dissolved_oxygen_mg_l=6.1,
+            contamination_risk="UNHEALTHY",
+            water_level_meters=14.8,
+            threshold_capacity_pct=92.0,
+            inspection_recommended=True
+        )
+    ]
+    db.add_all(water_items)
+
+    # 6. Infrastructure
+    infra_items = [
+        InfrastructureMetric(
+            zone_name="Sector 1 & Riverbank Corridor",
+            road_closures_count=3,
+            power_outage_pct=28.5,
+            bridge_integrity_score=88.0,
+            traffic_congestion="HEAVY",
+            safe_evacuation_routes=["Bypass Highway B-4"]
+        )
+    ]
+    db.add_all(infra_items)
+
+    # 7. Digital Twin Zones
+    zones = [
+        DigitalTwinZone(
+            zone_code="ZONE-01-CENTRAL",
+            name="Central Riverbank & Commercial District",
+            population=145000,
+            hospitals_count=2,
+            schools_count=14,
+            power_grid_status="PARTIAL_OUTAGE",
+            water_supply_status="CONTAMINATED",
+            overall_health_score=72.4,
+            risk_level="HIGH",
+            latitude=16.5100,
+            longitude=80.6480
+        )
+    ]
+    db.add_all(zones)
+
+    # 8. Sample Active Incident with Chat Messages & Timeline
+    inc1 = Incident(
+        title="Severe Waterlog & Flash Flood Inundation",
+        category="Flood",
+        description="Water level risen to 3 feet near Sector 2 Underpass. 4 families trapped on rooftop.",
+        latitude=16.5095,
+        longitude=80.6455,
+        address="Sector 2 Underpass Road, Ward 11",
+        urgency="CRITICAL",
+        status="EN_ROUTE",
+        eta_seconds=420,
+        photo_url="https://images.unsplash.com/photo-1547683905-f686c993aae5?q=80&w=800&auto=format&fit=crop",
+        voice_transcript="पानी बहुत तेजी से बढ़ रहा है! हम छत पर हैं!",
+        reporter_name="Rithwik Rao (Citizen)",
+        reporter_phone="+91 98765 43210",
+        user_id=1,
+        is_verified=True,
+        is_fake=False,
+        is_duplicate=False,
+        confidence_score=0.96,
+        severity_score=9,
+        ai_summary="Flash flood rooftop trapped families verified via voice and photo telemetry.",
+        recommended_actions=["Dispatch ALS Ambulance Unit 108-A1", "Deploy Fire Boat Team"],
+        assigned_resources={
+            "ambulance": "ALS Rapid Ambulance Unit 108-A1",
+            "hospital": "District General Government Hospital",
+            "shelter": "Central High School Flood Relief Shelter #1"
+        },
+        assigned_team_name="ALS Rapid Unit 108-A1",
+        assigned_team_department="AMBULANCE"
+    )
+
+    db.add(inc1)
+    db.commit()
+    db.refresh(inc1)
+
+    c1 = ChatMessage(
+        incident_id=inc1.id,
+        sender_name="Dr. Anita Reddy",
+        sender_role="ALS Paramedic Lead",
+        message="ALS Ambulance 108-A1 is en route to Sector 2 Underpass. ETA 7 minutes. Please stay on rooftop!"
+    )
+    c2 = ChatMessage(
+        incident_id=inc1.id,
+        sender_name="Rithwik Rao",
+        sender_role="Citizen",
+        message="Thank you! We are on the roof, 4 adults and 2 children."
+    )
+    db.add_all([c1, c2])
+
+    t1 = TimelineEvent(
+        incident_id=inc1.id,
+        agent_name="Citizen Voice Agent",
+        action="Distress Call Received",
+        details="Extracted coordinates (16.5095, 80.6455) & 6 stranded individuals.",
+        status_change="SUBMITTED"
+    )
+    t2 = TimelineEvent(
+        incident_id=inc1.id,
+        agent_name="Emergency Coordinator Agent",
+        action="Dispatched Rescue Team",
+        details="Matched nearest ALS Ambulance & Shelter. Crew marked EN_ROUTE.",
+        status_change="EN_ROUTE"
+    )
+    db.add_all([t1, t2])
+
+    db.commit()
+    logger.info("Successfully seeded database with users, incidents, and chat messages.")
