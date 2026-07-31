@@ -14,8 +14,8 @@ if os.path.exists(env_path):
                 k, v = line.strip().split("=", 1)
                 os.environ[k.strip()] = v.strip()
 
-OMNIDIMENSION_API_KEY = os.getenv("OMNIDIMENSION_API_KEY", "omni_demo_key_hackathon_2026")
-OMNIDIMENSION_AGENT_ID = os.getenv("OMNIDIMENSION_AGENT_ID", "agent_lifegrid_emergency_v2")
+OMNIDIMENSION_API_KEY = os.getenv("OMNIDIMENSION_API_KEY", "ScsPyhuOsEHBMRHbe1mJ3bme_eo1B_zllDnVo4WbxvI")
+OMNIDIMENSION_AGENT_ID = int(os.getenv("OMNIDIMENSION_AGENT_ID", "134874"))
 
 DEFAULT_TARGET_PHONE = "+918121985059"
 
@@ -25,33 +25,34 @@ async def dispatch_omnidimension_call(
     incident_context: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
-    Dispatches a real-time low-latency OmniDimension Conversational Voice AI Agent call.
+    Dispatches a real-time low-latency OmniDimension Conversational Voice AI Agent call to Indian mobile numbers (+91...).
     """
     if not to_phone.startswith("+"):
         to_phone = "+91" + to_phone.lstrip("0")
 
-    url = "https://api.omnidimension.ai/v1/calls/dispatch"
+    url = "https://omnidim.io/api/v1/calls/dispatch"
     
     headers = {
         "Authorization": f"Bearer {OMNIDIMENSION_API_KEY}",
         "Content-Type": "application/json"
     }
 
+    sos_prompt = """You are LifeGrid AI Emergency Command Center Assistant calling citizen Rithwik Rao following an 1-Tap SOS Panic Button activation.
+Your instructions:
+1. Speak immediately as LifeGrid Emergency Dispatcher.
+2. State clearly: 'Emergency SOS Alert! LifeGrid AI Emergency Command Center here. We received your high priority SOS panic signal. What is your emergency situation?'
+3. Ask if anyone is injured, casualty count, and if children or elderly are present.
+4. Confirm nearest ALS Ambulance and Police crew dispatch.
+5. Reassure citizen Rithwik Rao."""
+
     payload = {
         "agent_id": OMNIDIMENSION_AGENT_ID,
-        "recipient_phone": to_phone,
-        "language": language, # en, hi, te, ta, kn
-        "system_prompt": """You are LifeGrid AI Emergency Voice Assistant speaking directly to a citizen in distress.
-Your task:
-1. Speak in natural conversational tone.
-2. Provide immediate safety instructions (move to elevated ground / stay indoors).
-3. Ask if anyone is injured, casualty count, and if children/elderly are present.
-4. Confirm nearest ambulance and fire crew dispatch.
-5. Reassure the citizen.""",
-        "metadata": incident_context or {
-            "incident_id": "SOS-PANIC-01",
-            "urgency": "CRITICAL",
-            "location": "Rithwik Rao GPS Coordinates"
+        "to_number": to_phone,
+        "prompt": sos_prompt,
+        "custom_variables": {
+            "platform": "LifeGrid AI Emergency OS",
+            "citizen_name": "Rithwik Rao",
+            "emergency_type": "1-Tap SOS Panic Signal"
         }
     }
 
@@ -60,23 +61,20 @@ Your task:
             res = await client.post(url, json=payload, headers=headers)
             if res.status_code in [200, 201]:
                 data = res.json()
-                logger.info(f"OmniDimension Voice Call successfully dispatched to {to_phone}")
+                logger.info(f"OmniDimension SOS Emergency Voice Call successfully dispatched to {to_phone}: {data}")
                 return {
                     "success": True,
-                    "call_id": data.get("call_id", "omni_call_8841"),
+                    "request_id": data.get("requestId"),
                     "status": "DISPATCHED",
-                    "engine": "OmniDimension Realtime Conversational Voice AI"
+                    "engine": "LifeGrid AI - OmniDimension Voice Engine"
                 }
             else:
-                logger.warning(f"OmniDimension API returned status {res.status_code}")
+                logger.warning(f"OmniDimension API returned status {res.status_code}: {res.text}")
     except Exception as e:
         logger.error(f"OmniDimension API call error: {e}")
 
-    # High-precision fallback response
     return {
-        "success": True,
-        "call_id": "omni_live_session_9921",
-        "status": "DISPATCHED",
-        "engine": "OmniDimension Conversational AI Engine",
-        "details": f"OmniDimension Voice Agent dispatched to {to_phone} (Language: {language.upper()})"
+        "success": False,
+        "status": "FAILED",
+        "engine": "LifeGrid AI - OmniDimension Voice Engine"
     }
