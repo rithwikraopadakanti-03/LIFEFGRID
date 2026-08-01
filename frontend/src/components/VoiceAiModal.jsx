@@ -59,7 +59,7 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
 
     try {
       const res = await axios.post('/api/voice/process-speech', {
-        phone: "+91 98765 43210",
+        phone: "+91 8121985059",
         language: language,
         user_speech: textToSend,
         incident_context: targetIncident
@@ -69,6 +69,10 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
       setChatLog(prev => [...prev, { sender: 'ai', text: aiResponse }]);
       setExtractedData(res.data);
       speakText(aiResponse, language);
+
+      if (window.refreshLifeGridData) {
+        window.refreshLifeGridData();
+      }
     } catch (e) {
       console.error("Voice AI error", e);
     } finally {

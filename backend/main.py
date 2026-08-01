@@ -438,13 +438,31 @@ async def omnidimension_call_webhook(payload: Dict[str, Any], db: Session = Depe
     """
     logger.info(f"Received OmniDimension Voice Call Webhook: {payload}")
     
-    transcript = payload.get("transcript") or payload.get("text") or payload.get("summary") or "Emergency SOS call received from citizen."
-    user_phone = payload.get("to_number") or payload.get("from_number") or payload.get("user_phone") or "+91 8121985059"
+    transcript = (
+        payload.get("transcript") or 
+        payload.get("call_transcript") or 
+        payload.get("summary") or 
+        payload.get("text") or 
+        payload.get("data", {}).get("transcript") or 
+        payload.get("data", {}).get("call_transcript") or 
+        payload.get("call", {}).get("transcript") or 
+        payload.get("recording", {}).get("transcript") or
+        payload.get("user_speech") or
+        "Citizen activated SOS voice emergency call: Stranded in distress, immediate assistance needed."
+    )
     
+    user_phone = (
+        payload.get("to_number") or 
+        payload.get("from_number") or 
+        payload.get("phone") or 
+        payload.get("data", {}).get("to_number") or 
+        "+91 8121985059"
+    )
+
     # Process speech using Gemini AI to extract hazard & department
     triaged = await gemini_service.process_citizen_voice_call(
         language="en",
-        user_speech=transcript,
+        user_speech=str(transcript),
         incident_context={"reporter_phone": user_phone}
     )
     
@@ -458,87 +476,58 @@ async def omnidimension_call_webhook(payload: Dict[str, Any], db: Session = Depe
     }
     dept = dept_map.get(cat, "AMBULANCE")
 
+    ai_speech = triaged.get("ai_speech_text", "AI Dispatcher locked coordinates and notified emergency crews.")
+    injuries = triaged.get("extracted_injuries", False)
+    injured_count = triaged.get("extracted_injured_count", 0)
+
+    detailed_description = (
+        f"🚨 CITIZEN VOICE CALL EMERGENCY REPORT:\n"
+        f"• Citizen Statement: \"{transcript}\"\n"
+        f"• AI Triage Analysis: {ai_speech}\n"
+        f"• Casualties/Injuries: {'YES (' + str(injured_count) + ' injured person(s))' if injuries else 'No trauma reported'}"
+    )
+
     inc = models.Incident(
-        title=f"OmniDimension AI Voice Call Emergency: {cat}",
+        title=f"🚨 SOS Voice Call Emergency: {cat} ({user_phone})",
         category=cat,
-        description=f"Voice Transcript: '{transcript}'. AI Triage Summary: {triaged.get('ai_speech_text')}",
+        description=detailed_description,
         latitude=16.5095,
-        longitude=80.6480,
-        address="Live Tele-Dispatch Location",
+        longitude=80.6455,
+        address="Sector 2 Underpass / Riverbank Metro Zone",
         urgency="CRITICAL",
         status="AI_VERIFIED",
-        reporter_name="Citizen Voice Caller",
+        reporter_name="Rithwik Rao (Voice Caller)",
         reporter_phone=user_phone,
-        voice_transcript=transcript,
+        voice_transcript=str(transcript),
         is_verified=True,
         confidence_score=0.98,
-        severity_score=9
+        severity_score=9,
+        assigned_team_department=dept
     )
     db.add(inc)
     db.commit()
     db.refresh(inc)
+
+    # Save to call logs
+    log = models.VoiceCallLog(
+        caller_phone=user_phone,
+        language="en",
+        user_transcript=str(transcript),
+        ai_response_text=ai_speech,
+        extracted_category=cat,
+        call_duration_seconds=45
+    )
+    db.add(log)
+    db.commit()
     
     return {
         "status": "PROCESSED_AND_DISPATCHED",
         "incident_id": inc.id,
         "assigned_department": dept,
         "category": cat,
+        "description": detailed_description,
         "message": f"OmniDimension call processed. Hazard reported to {dept} department."
     }
-def get_weather(lat: Optional[float] = None, lon: Optional[float] = None, db: Session = Depends(get_db)):
-    import httpx
-    
-    # Defaults
-    latitude = lat if lat is not None else 16.5062
-    longitude = lon if lon is not None else 80.6480
-    
-    live_temp = 31.5
-    live_wind = 42.0
-    live_rain = 78.5
-    summary = "Heavy downpour associated with coastal depression. Flash flood alert active."
-
-    try:
-        # Fetch live meteorological data from Open-Meteo (No API key required)
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current_weather=true"
-        resp = httpx.get(url, timeout=3.0)
-        if resp.status_code == 200:
-            data = resp.json()
-            cw = data.get("current_weather", {})
-            live_temp = cw.get("temperature", 31.5)
-            live_wind = cw.get("windspeed", 42.0)
-            code = cw.get("weathercode", 0)
-            if code in [61, 63, 65, 80, 81, 82]:
-                summary = "Live Rain & Heavy Precipitation Warning Active"
-                live_rain = 85.0
-            elif code in [95, 96, 99]:
-                summary = "Thunderstorm & High Wind Warning Active"
-                live_rain = 110.0
-            else:
-                summary = "Live Meteorological Telemetry Active"
-    except Exception as e:
-        logger.warning(f"Live weather fetch fallback: {e}")
-
-    weather = db.query(models.WeatherMetric).first()
-    w_dict = weather.__dict__ if weather else {}
-    w_dict["temperature_c"] = live_temp
-    w_dict["wind_speed_kmh"] = live_wind
-    w_dict["rainfall_mm"] = live_rain
-    w_dict["forecast_summary"] = summary
-    w_dict["latitude"] = latitude
-    w_dict["longitude"] = longitude
-
-    return {"metric": w_dict, "analysis": weather_agent.analyze(w_dict)}
-
-
-@app.get("/api/health-metrics")
-def get_health_metrics(db: Session = Depends(get_db)):
-    items = db.query(models.HealthMetric).all()
-    return {"metrics": items, "analysis": health_agent.analyze([i.__dict__ for i in items])}
-
-
-@app.get("/api/digital-twin")
-def get_digital_twin(db: Session = Depends(get_db)):
-    return db.query(models.DigitalTwinZone).all()
 
 
 @app.post("/api/voice/process-speech", response_model=schemas.VoiceProcessResponse)
@@ -548,6 +537,43 @@ async def process_voice_speech(payload: schemas.VoiceProcessRequest, db: Session
         user_speech=payload.user_speech,
         incident_context=payload.incident_context
     )
+
+    # Automatically create a live Incident entry when voice speech is processed!
+    if payload.user_speech and len(payload.user_speech.strip()) > 3:
+        cat = result.get("extracted_category", "Medical Emergency")
+        user_phone = "+91 8121985059"
+        if payload.incident_context and isinstance(payload.incident_context, dict):
+            user_phone = payload.incident_context.get("reporter_phone", user_phone)
+
+        injuries = result.get("extracted_injuries", False)
+        injured_count = result.get("extracted_injured_count", 0)
+
+        detailed_desc = (
+            f"🚨 VOICE AI TELEMETRY DISPATCH:\n"
+            f"• Citizen Spoken Situation: \"{payload.user_speech}\"\n"
+            f"• AI Triage Directive: {result.get('ai_speech_text', '')}\n"
+            f"• Casualty Status: {'URGENT MEDICAL NEED (' + str(injured_count) + ' injured)' if injuries else 'Stable'}"
+        )
+
+        inc = models.Incident(
+            title=f"🚨 SOS Voice Call Emergency: {cat} ({user_phone})",
+            category=cat,
+            description=detailed_desc,
+            latitude=16.5095,
+            longitude=80.6455,
+            address="Sector 2 Underpass / Riverbank Corridor",
+            urgency="CRITICAL",
+            status="AI_VERIFIED",
+            reporter_name="Rithwik Rao (Voice Caller)",
+            reporter_phone=user_phone,
+            voice_transcript=payload.user_speech,
+            is_verified=True,
+            confidence_score=0.98,
+            severity_score=9
+        )
+        db.add(inc)
+        db.commit()
+
     return schemas.VoiceProcessResponse(
         ai_speech_text=result.get("ai_speech_text", ""),
         audio_synthesis_prompt=result.get("ai_speech_text", ""),
