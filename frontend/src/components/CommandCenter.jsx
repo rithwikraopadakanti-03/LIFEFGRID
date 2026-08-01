@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, MapPin, 
   PhoneCall, Zap, Send, Navigation, ChevronRight, Activity, Users, Truck,
-  Film, Radio, TrendingUp, HelpCircle, Layers, Cpu
+  Film, Radio, TrendingUp, HelpCircle, Layers, Cpu, FileText
 } from 'lucide-react';
 import LiveMap from './LiveMap';
 import AgentDecisionPanel from './AgentDecisionPanel';
@@ -10,6 +10,7 @@ import ExplainableAiCard from './ExplainableAiCard';
 import IncidentReplayPlayer from './IncidentReplayPlayer';
 import PredictiveAiSimulator from './PredictiveAiSimulator';
 import SmartAlertBroadcastModal from './SmartAlertBroadcastModal';
+import PostIncidentReport from './PostIncidentReport';
 import axios from 'axios';
 
 export default function CommandCenter({ 
@@ -27,6 +28,7 @@ export default function CommandCenter({
   const [replayData, setReplayData] = useState(null);
   const [activeReplayFrame, setActiveReplayFrame] = useState(null);
   const [userCoords, setUserCoords] = useState(null);
+  const [reportIncident, setReportIncident] = useState(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -361,6 +363,26 @@ export default function CommandCenter({
 
       {/* Explainable AI Reasoning Card ("WHY") */}
       <ExplainableAiCard explainableItems={explainableData?.explainable_reasoning || []} />
+
+      {/* Post-Incident Report */}
+      {selectedInc && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setReportIncident(selectedInc)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white font-bold text-xs cursor-pointer transition-all"
+          >
+            <FileText className="w-4 h-4" />
+            Generate AI Post-Incident Report
+          </button>
+        </div>
+      )}
+
+      {reportIncident && (
+        <PostIncidentReport
+          incident={reportIncident}
+          onClose={() => setReportIncident(null)}
+        />
+      )}
 
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   ShieldAlert, Activity, Cpu, MapPin, PhoneCall, 
-  BarChart3, CloudRain, HeartPulse, Layers, History, PlusCircle, RefreshCw, User, LogIn, LogOut
+  BarChart3, CloudRain, HeartPulse, Layers, History, PlusCircle, RefreshCw, User, LogIn, LogOut, Shield, Zap
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -12,7 +12,8 @@ export default function Navbar({
   onOpenVoiceModal, 
   onOpenAuthModal,
   onLogout,
-  onRefreshData 
+  onRefreshData,
+  onOpenDemoMode
 }) {
   const tabs = [
     { id: 'citizen-portal', label: 'Citizen Portal', icon: User },
@@ -25,6 +26,7 @@ export default function Navbar({
     { id: 'weather', label: 'Weather Telemetry', icon: CloudRain },
     { id: 'timeline', label: 'Audit Timeline', icon: History },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'safety-score', label: 'Safety Score', icon: Shield },
   ];
 
   const isEmergencyTeam = currentUser?.role === 'EMERGENCY_TEAM' || currentUser?.role === 'ADMIN';
@@ -105,6 +107,16 @@ export default function Navbar({
             <PhoneCall className="w-4 h-4 text-amber-400" />
             <span>Voice Dispatcher</span>
           </button>
+
+          {isEmergencyTeam && onOpenDemoMode && (
+            <button
+              onClick={onOpenDemoMode}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs shadow-lg shadow-amber-600/20 border border-amber-500 cursor-pointer transition-all"
+            >
+              <Zap className="w-4 h-4" />
+              <span>WOW Demo</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenReportModal}

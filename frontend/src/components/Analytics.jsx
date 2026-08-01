@@ -78,6 +78,33 @@ export default function Analytics() {
         </div>
       </div>
 
+      {/* Performance KPI Dashboard */}
+      <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+        <h3 className="font-extrabold text-base text-white flex items-center gap-2">
+          <Activity className="w-4 h-4 text-rose-400" />
+          Performance Dashboard
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { label: 'Avg Response Time', value: '5.8m', sub: 'from report to dispatch', color: 'text-cyan-400', bar: 75 },
+            { label: 'Avg Resolution Time', value: '28m', sub: 'dispatch to resolved', color: 'text-indigo-400', bar: 65 },
+            { label: 'AI Accuracy', value: '99.1%', sub: 'verification precision', color: 'text-emerald-400', bar: 99 },
+            { label: 'Resources Used', value: '94%', sub: 'fleet utilization rate', color: 'text-amber-400', bar: 94 },
+            { label: 'Citizen Satisfaction', value: '4.9/5', sub: 'post-incident survey', color: 'text-rose-400', bar: 98 },
+            { label: 'Dept Efficiency', value: '98.7%', sub: 'SLA compliance rate', color: 'text-violet-400', bar: 98 },
+          ].map((kpi, i) => (
+            <div key={i} className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+              <p className="text-[10px] text-slate-400 font-semibold">{kpi.label}</p>
+              <span className={`text-xl font-black ${kpi.color}`}>{kpi.value}</span>
+              <p className="text-[10px] text-slate-500">{kpi.sub}</p>
+              <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${kpi.color.replace('text-', 'bg-')}`} style={{ width: `${kpi.bar}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Main Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         

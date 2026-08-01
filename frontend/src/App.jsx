@@ -14,6 +14,10 @@ import PublicHealth from './components/PublicHealth';
 import WeatherIntel from './components/WeatherIntel';
 import EmergencyTimeline from './components/EmergencyTimeline';
 import Analytics from './components/Analytics';
+import AICopilot from './components/AICopilot';
+import DemoModeController from './components/DemoModeController';
+import CommunitySafetyCard from './components/CommunitySafetyCard';
+import NotificationToast, { toast } from './components/NotificationToast';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('citizen-portal');
@@ -34,6 +38,10 @@ export default function App() {
   // Live Chat Drawer
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [selectedIncidentForChat, setSelectedIncidentForChat] = useState(null);
+
+  // New Feature Modals
+  const [isDemoModeOpen, setIsDemoModeOpen] = useState(false);
+  const [prevIncidentCount, setPrevIncidentCount] = useState(0);
 
   const fetchData = async (isInitial = false, userLat = null, userLon = null) => {
     try {
@@ -56,7 +64,7 @@ export default function App() {
 
   useEffect(() => {
     window.refreshLifeGridData = () => fetchData(false);
-    
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => fetchData(true, pos.coords.latitude, pos.coords.longitude),
@@ -76,6 +84,15 @@ export default function App() {
       clearInterval(interval);
     };
   }, []);
+
+  // Toast new critical incidents
+  useEffect(() => {
+    const critical = incidents.filter(i => i.urgency === 'CRITICAL' && i.status !== 'RESOLVED');
+    if (incidents.length > prevIncidentCount && prevIncidentCount > 0) {
+      toast.critical(`New emergency reported! ${incidents[0]?.title || 'Incident'} — AI verification in progress.`);
+    }
+    setPrevIncidentCount(incidents.length);
+  }, [incidents.length]);
 
   useEffect(() => {
     if (currentUser?.role === 'EMERGENCY_TEAM' && activeTab === 'citizen-portal') {
@@ -130,6 +147,7 @@ export default function App() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onLogout={handleLogout}
         onRefreshData={fetchData}
+        onOpenDemoMode={() => setIsDemoModeOpen(true)}
       />
 
       {/* Main View Area */}
@@ -191,7 +209,7 @@ export default function App() {
           </div>
         ) : (
           (() => {
-            const isRestricted = ['team-ops', 'command', 'agents', 'digital-twin', 'health', 'timeline', 'analytics'].includes(activeTab);
+            const isRestricted = ['team-ops', 'command', 'agents', 'digital-twin', 'health', 'timeline', 'analytics', 'safety-score'].includes(activeTab);
             const isAuthorizedTeam = currentUser?.role === 'EMERGENCY_TEAM' || currentUser?.role === 'ADMIN';
 
             if (isRestricted && !isAuthorizedTeam) {
@@ -283,6 +301,8 @@ export default function App() {
                 {activeTab === 'timeline' && <EmergencyTimeline incidents={incidents} />}
 
                 {activeTab === 'analytics' && <Analytics />}
+
+                {activeTab === 'safety-score' && <CommunitySafetyCard />}
               </>
             );
           })()
@@ -327,6 +347,20 @@ export default function App() {
         incident={selectedIncidentForChat}
         currentUser={currentUser}
       />
+
+      {/* Demo Mode */}
+      {isDemoModeOpen && (
+        <DemoModeController
+          onClose={() => setIsDemoModeOpen(false)}
+          onIncidentCreated={() => { fetchData(); toast.critical('Demo scenario injected! AI Verification running...'); }}
+        />
+      )}
+
+      {/* Floating AI Copilot */}
+      <AICopilot currentUser={currentUser} />
+
+      {/* Global Notification Toasts */}
+      <NotificationToast />
 
     </div>
   );

@@ -1120,3 +1120,233 @@ def broadcast_smart_alert(
         "targets_reached_estimate": 14500,
         "message": f"Broadcast successfully issued to {target_group} via {', '.join(channels)}."
     }
+
+
+# ==========================================
+# AI COPILOT ENDPOINT
+# ==========================================
+
+@app.post("/api/copilot/ask")
+async def ask_copilot(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    """AI Copilot — instant Q&A for emergency operators."""
+    question = payload.get("question", "")
+    if not question:
+        raise HTTPException(status_code=400, detail="Question is required")
+
+    incidents = db.query(models.Incident).all()
+    critical_count = sum(1 for i in incidents if i.urgency == "CRITICAL" and i.status != "RESOLVED")
+    active_count = sum(1 for i in incidents if i.status != "RESOLVED")
+    departments = list(set(i.assigned_team_department for i in incidents if i.assigned_team_department))
+
+    context = {
+        "incidents_count": active_count,
+        "critical_count": critical_count,
+        "active_departments": departments
+    }
+
+    answer = await gemini_service.generate_copilot_answer(question, context)
+    return {"question": question, "answer": answer, "timestamp": datetime.utcnow().isoformat()}
+
+
+# ==========================================
+# POST-INCIDENT AI REPORT
+# ==========================================
+
+@app.get("/api/incidents/{incident_id}/post-incident-report")
+async def get_post_incident_report(incident_id: int, db: Session = Depends(get_db)):
+    """Generate and return a full AI post-incident report."""
+    inc = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    report_text = await gemini_service.generate_post_incident_report(inc.__dict__)
+    return {
+        "incident_id": inc.id,
+        "title": inc.title,
+        "category": inc.category,
+        "status": inc.status,
+        "report": report_text,
+        "generated_at": datetime.utcnow().isoformat()
+    }
+
+
+# ==========================================
+# COMMUNITY SAFETY SCORE
+# ==========================================
+
+@app.get("/api/community-safety")
+def get_community_safety_score(db: Session = Depends(get_db)):
+    """Compute community safety scores from all available data."""
+    incidents = db.query(models.Incident).all()
+    weather = db.query(models.WeatherMetric).first()
+    health = db.query(models.HealthMetric).all()
+    water = db.query(models.WaterMetric).all()
+
+    # Fire Risk: count recent fire incidents
+    fire_incidents = sum(1 for i in incidents if "Fire" in str(i.category))
+    fire_risk = min(100, fire_incidents * 15 + 20)
+
+    # Flood Risk: weather-based
+    rainfall = weather.rainfall_mm if weather else 25.0
+    flood_risk = min(100, int((rainfall / 120.0) * 80) + 15)
+
+    # Medical Risk: hospital occupancy
+    avg_occ = sum(h.hospital_bed_occupancy_pct for h in health) / max(1, len(health)) if health else 55.0
+    health_risk = min(100, int(avg_occ * 0.8))
+
+    # Water Risk
+    water_risk_count = sum(1 for w in water if w.contamination_risk in ["UNHEALTHY", "HAZARDOUS"])
+    water_risk = min(100, water_risk_count * 25 + 10)
+
+    # Crime Risk: police incidents
+    crime_incidents = sum(1 for i in incidents if "Police" in str(i.category) or "Crime" in str(i.category))
+    crime_risk = min(100, crime_incidents * 20 + 15)
+
+    # Emergency Readiness: based on available resources
+    resources = db.query(models.Resource).filter(models.Resource.status == "AVAILABLE").count()
+    readiness = min(100, resources * 10 + 40)
+
+    overall = 100 - int((fire_risk + flood_risk + health_risk + water_risk + crime_risk) / 5 * 0.6 + (100 - readiness) * 0.1)
+    overall = max(0, min(100, overall))
+
+    return {
+        "locality": "Krishna District Metro Zone",
+        "scores": {
+            "flood_risk": flood_risk,
+            "fire_risk": fire_risk,
+            "crime_risk": crime_risk,
+            "health_risk": health_risk,
+            "water_safety": 100 - water_risk,
+            "emergency_readiness": readiness
+        },
+        "overall_score": overall,
+        "grade": "A" if overall >= 80 else "B" if overall >= 65 else "C" if overall >= 50 else "D",
+        "updated_at": datetime.utcnow().isoformat()
+    }
+
+
+# ==========================================
+# AI INCIDENT PRIORITY SCORE
+# ==========================================
+
+@app.get("/api/incidents/{incident_id}/priority-score")
+def get_incident_priority_score(incident_id: int, db: Session = Depends(get_db)):
+    """Calculate AI-powered numeric priority score (0-100) for an incident."""
+    inc = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    weather = db.query(models.WeatherMetric).first()
+
+    # Base score from severity
+    base = inc.severity_score * 9  # 0-90
+
+    # Urgency modifier
+    urgency_bonus = {"CRITICAL": 10, "HIGH": 6, "MEDIUM": 3, "LOW": 0}.get(inc.urgency, 3)
+
+    # Weather modifier
+    rainfall_bonus = 0
+    if weather and weather.rainfall_mm > 60:
+        rainfall_bonus = 5
+
+    # Category weight
+    cat_weight = {
+        "Medical Emergency": 8, "SOS": 10, "Fire Emergency": 9, "Flood Emergency": 8,
+        "Road Accident": 7, "Building Collapse": 9, "Gas Leak": 8, "Power Failure": 4
+    }.get(inc.category, 5)
+
+    score = min(100, base + urgency_bonus + rainfall_bonus + (cat_weight // 2))
+
+    breakdown = [
+        f"Severity Score: {inc.severity_score}/10 → base {base} pts",
+        f"Urgency Level ({inc.urgency}): +{urgency_bonus} pts",
+        f"Category Weight ({inc.category}): +{cat_weight // 2} pts",
+        f"Weather Modifier: +{rainfall_bonus} pts" if rainfall_bonus else "Weather: No additional risk"
+    ]
+
+    return {
+        "incident_id": inc.id,
+        "priority_score": score,
+        "grade": "CRITICAL" if score >= 85 else "HIGH" if score >= 70 else "MEDIUM" if score >= 50 else "LOW",
+        "breakdown": breakdown,
+        "category": inc.category,
+        "urgency": inc.urgency
+    }
+
+
+# ==========================================
+# HACKATHON DEMO MODE — AUTO SIMULATION
+# ==========================================
+
+@app.post("/api/demo/trigger-scenario")
+async def trigger_demo_scenario(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """Create a vivid demo emergency scenario for hackathon judges."""
+    import random
+    scenarios = [
+        {
+            "title": "🚨 Cardiac Arrest — Citizen Down at Hitech City Junction",
+            "category": "Medical Emergency",
+            "description": "67-year-old male collapsed unconscious at Hitech City Signal. Bystanders performing CPR. Multiple witnesses called 108. ALS ambulance with defibrillator required immediately.",
+            "urgency": "CRITICAL",
+            "address": "Hitech City Junction, Madhapur",
+            "latitude": 17.4486,
+            "longitude": 78.3908,
+            "severity_score": 10,
+        },
+        {
+            "title": "🔥 Building Fire — Chemical Plant Sector 4",
+            "category": "Fire Emergency",
+            "description": "Multi-storey chemical storage facility on fire. Thick black smoke visible 5km radius. 3 workers reportedly trapped on 2nd floor. Hazmat risk elevated.",
+            "urgency": "CRITICAL",
+            "address": "Sector 4 Industrial Zone, Patancheru",
+            "latitude": 17.5299,
+            "longitude": 78.2651,
+            "severity_score": 10,
+        },
+        {
+            "title": "🌊 Flash Flood — Residential Colony Submerged",
+            "category": "Flood Emergency",
+            "description": "Low-lying residential colony submerged 4 feet deep after sudden Krishna river overflow. 200+ residents stranded on rooftops. Elderly and children reported. SDRF boats required urgently.",
+            "urgency": "CRITICAL",
+            "address": "Ward 12, Riverbank Colony, Krishna District",
+            "latitude": 16.5095,
+            "longitude": 80.6455,
+            "severity_score": 10,
+        }
+    ]
+
+    chosen = random.choice(scenarios)
+    demo_inc = models.Incident(
+        title=chosen["title"],
+        category=chosen["category"],
+        description=chosen["description"],
+        urgency=chosen["urgency"],
+        address=chosen["address"],
+        latitude=chosen["latitude"],
+        longitude=chosen["longitude"],
+        severity_score=chosen["severity_score"],
+        confidence_score=0.99,
+        status="AI_VERIFIED",
+        is_verified=True,
+        reporter_name="Demo Citizen",
+        reporter_phone="Demo Mode",
+        ai_summary=f"DEMO: {chosen['title']} — AI verified with 99% confidence. Immediate multi-department response required.",
+        recommended_actions=[
+            "Dispatch nearest ALS-equipped emergency unit immediately",
+            "Notify District Emergency Control Room",
+            "Alert nearest hospital ICU to prepare trauma bay"
+        ]
+    )
+    db.add(demo_inc)
+    db.commit()
+    db.refresh(demo_inc)
+
+    return {
+        "status": "DEMO_SCENARIO_CREATED",
+        "incident_id": demo_inc.id,
+        "scenario": chosen["title"],
+        "message": "Demo incident created. Dispatcher Agent will auto-generate recommendation."
+    }
