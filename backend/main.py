@@ -149,23 +149,26 @@ def get_incident(incident_id: int, db: Session = Depends(get_db)):
 @app.post("/api/incidents/sos", response_model=schemas.IncidentResponse)
 async def trigger_quick_sos(
     background_tasks: BackgroundTasks,
-    latitude: float = 16.5095,
-    longitude: float = 80.6455,
-    reporter_name: str = "Citizen In Distress",
+    payload: Optional[schemas.SOSRequest] = None,
     db: Session = Depends(get_db)
 ):
     """Instant 1-Tap SOS Panic Button Trigger"""
+    lat = payload.latitude if payload else 16.5095
+    lon = payload.longitude if payload else 80.6455
+    name = payload.reporter_name if payload else "Citizen In Distress"
+    phone = payload.reporter_phone if (payload and payload.reporter_phone) else "Registered Phone"
+
     sos_inc = models.Incident(
         title="🚨 1-Tap Red SOS Emergency",
         category="SOS",
         description="Citizen pressed 1-Tap Emergency SOS Panic Button. Immediate dispatch required.",
-        latitude=latitude,
-        longitude=longitude,
+        latitude=lat,
+        longitude=lon,
         address="Live GPS Coordinates",
         urgency="CRITICAL",
         status="AI_VERIFIED",
-        reporter_name=reporter_name,
-        reporter_phone="+918121985059",
+        reporter_name=name,
+        reporter_phone=phone,
         is_verified=True,
         confidence_score=0.99,
         severity_score=10,
@@ -587,9 +590,7 @@ async def process_voice_speech(payload: schemas.VoiceProcessRequest, db: Session
     # Automatically create a live Incident entry when voice speech is processed!
     if payload.user_speech and len(payload.user_speech.strip()) > 3:
         cat = result.get("extracted_category", "Medical Emergency")
-        user_phone = "+91 8121985059"
-        if payload.incident_context and isinstance(payload.incident_context, dict):
-            user_phone = payload.incident_context.get("reporter_phone", user_phone)
+        user_phone = payload.phone or (payload.incident_context.get("reporter_phone") if isinstance(payload.incident_context, dict) else None) or "Registered Phone"
 
         injuries = result.get("extracted_injuries", False)
         injured_count = result.get("extracted_injured_count", 0)

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { PhoneCall, Mic, MicOff, Volume2, X, Send, AlertTriangle, ShieldCheck, CheckCircle, Languages, UserCheck } from 'lucide-react';
 import axios from 'axios';
 
-export default function VoiceAiModal({ isOpen, onClose, targetIncident = null }) {
-  const [language, setLanguage] = useState('en'); // en, hi, te, ta, kn
+export default function VoiceAiModal({ isOpen, onClose, currentUser = null, targetIncident = null }) {
+  const [language, setLanguage] = useState('en');
   const [isCalling, setIsCalling] = useState(false);
   const [speechText, setSpeechText] = useState('');
   const [chatLog, setChatLog] = useState([]);
@@ -12,7 +12,6 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
 
   useEffect(() => {
     if (isOpen) {
-      // Start call automatically
       setIsCalling(true);
       const initialGreeting = language === 'hi' 
         ? "नमस्ते, मैं लाइफग्रिड एआई बोल रहा हूँ। आप सुरक्षित स्थान पर रहें। क्या आप किसी आपात स्थिति में हैं?"
@@ -51,7 +50,6 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
     const textToSend = customSpeech || speechText;
     if (!textToSend.trim()) return;
 
-    // Add user message
     const newLog = [...chatLog, { sender: 'user', text: textToSend }];
     setChatLog(newLog);
     setSpeechText('');
@@ -59,7 +57,7 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
 
     try {
       const res = await axios.post('/api/voice/process-speech', {
-        phone: "+91 8121985059",
+        phone: currentUser?.phone || "+91 94400 10101",
         language: language,
         user_speech: textToSend,
         incident_context: targetIncident

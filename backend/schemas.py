@@ -156,8 +156,14 @@ class AgentStatusSchema(BaseModel):
     metrics_analyzed: int
     recommendation: str
 
+class SOSRequest(BaseModel):
+    latitude: float = 16.5095
+    longitude: float = 80.6455
+    reporter_name: Optional[str] = "Registered Citizen"
+    reporter_phone: Optional[str] = None
+
 class VoiceProcessRequest(BaseModel):
-    phone: Optional[str] = "+919876543210"
+    phone: Optional[str] = None
     language: str = "en"
     user_speech: str
     incident_context: Optional[Dict[str, Any]] = None

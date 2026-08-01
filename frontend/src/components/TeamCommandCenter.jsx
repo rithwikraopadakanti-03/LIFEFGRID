@@ -166,7 +166,7 @@ export default function TeamCommandCenter({
                     {/* Prominent Citizen Phone Number Badge */}
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-950/80 border border-amber-500/50 text-amber-300 font-bold">
                       <PhoneCall className="w-4 h-4 text-amber-400 animate-pulse" />
-                      <span>Citizen Contact: <a href={`tel:${inc.reporter_phone || '+918121985059'}`} className="underline text-white font-extrabold">{inc.reporter_name || 'Citizen'} ({inc.reporter_phone || '+91 8121985059'})</a></span>
+                      <span>Citizen Contact: <a href={`tel:${inc.reporter_phone}`} className="underline text-white font-extrabold">{inc.reporter_name || 'Registered Citizen'} ({inc.reporter_phone || 'Registered Phone'})</a></span>
                     </div>
 
                     <span>Severity: <strong className="text-rose-400">{inc.severity_score}/10</strong></span>
