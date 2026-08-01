@@ -1,158 +1,264 @@
 @import "tailwindcss";
 
 @theme {
-  /* Turquoise and White Theme Accents */
-  --color-cyan-300: #a7f3d0;
-  --color-cyan-400: #6ee7b7;
-  --color-cyan-500: #34d399;
-  --color-cyan-900: #064e3b;
-  --color-cyan-950: #022c22;
+  /* Remap Tailwind's slate palette to light/white tones */
+  --color-slate-50: #f8fffe;
+  --color-slate-100: #f0fdfa;
+  --color-slate-200: #e6f7f3;
+  --color-slate-300: #b2ece0;
+  --color-slate-400: #115e59;
+  --color-slate-500: #0f4f4a;
+  --color-slate-600: #0d403c;
+  --color-slate-700: rgba(255, 255, 255, 0.25);
+  --color-slate-800: rgba(255, 255, 255, 0.2);
+  --color-slate-900: rgba(255, 255, 255, 0.15);
+  --color-slate-950: rgba(255, 255, 255, 0.12);
+
+  /* Turquoise accent colors */
+  --color-cyan-300: #5eead4;
+  --color-cyan-400: #2dd4bf;
+  --color-cyan-500: #14b8a6;
+  --color-cyan-900: #0f766e;
+  --color-cyan-950: #042f2e;
   
-  --color-indigo-500: #0ea5e9;
-  --color-indigo-600: #0284c7;
+  --color-indigo-300: #67e8f9;
+  --color-indigo-500: #0d9488;
+  --color-indigo-600: #0f766e;
   
   --color-rose-400: #f43f5e;
   --color-rose-500: #e11d48;
+  --color-rose-700: #be123c;
+  --color-rose-950: rgba(225, 29, 72, 0.15);
 }
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    /* The requested vibrant turquoise background */
-    background: linear-gradient(135deg, #40E0D0 0%, #20B2AA 100%);
+    background: linear-gradient(135deg, #40E0D0 0%, #2EC4B6 50%, #20B2AA 100%);
     background-attachment: fixed;
-    color: #ffffff;
+    min-height: 100vh;
+    color: #134e4a;
   }
 
   code, pre {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  /* All text defaults to dark teal for readability on light bg */
+  h1, h2, h3, h4, h5, h6 {
+    color: #0f3d3a;
+  }
 }
 
-/* Override text colors to be crisp white */
-.text-slate-400, .text-slate-300, .text-slate-200, .text-slate-50, .text-slate-100 {
-  color: rgba(255, 255, 255, 0.9) !important;
+/* ===== COMPREHENSIVE WHITE THEME OVERRIDES ===== */
+
+/* White text classes → dark teal for readability */
+[class*="text-white"] {
+  color: #134e4a !important;
 }
-.text-white {
+[class*="text-slate-100"],
+[class*="text-slate-200"],
+[class*="text-slate-300"] {
+  color: #1a5c57 !important;
+}
+[class*="text-slate-400"],
+[class*="text-slate-500"] {
+  color: #3d8a84 !important;
+}
+[class*="text-cyan-400"],
+[class*="text-cyan-300"] {
+  color: #0f766e !important;
+}
+[class*="text-indigo-300"] {
+  color: #0d9488 !important;
+}
+
+/* Keep white text on colored buttons/badges */
+button[class*="bg-rose"],
+button[class*="bg-red"],
+button[class*="bg-cyan-5"],
+button[class*="bg-emerald"],
+button[class*="bg-green"],
+button[class*="bg-indigo"],
+button[class*="bg-blue"],
+[class*="bg-gradient"] {
   color: #ffffff !important;
 }
-.text-cyan-400, .text-cyan-300 {
+button[class*="bg-rose"] *,
+button[class*="bg-red"] *,
+button[class*="bg-cyan-5"] *,
+button[class*="bg-emerald"] *,
+button[class*="bg-green"] *,
+button[class*="bg-indigo"] *,
+button[class*="bg-blue"] * {
   color: #ffffff !important;
 }
 
-/* White Glassmorphism Panels */
+/* All dark backgrounds → frosted white glass */
+[class*="bg-slate-950"],
+[class*="bg-slate-900"],
+[class*="bg-slate-800"] {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Dark borders → soft white/teal borders */
+[class*="border-slate-800"],
+[class*="border-slate-700"],
+[class*="border-slate-600"] {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Hover backgrounds */
+[class*="hover\\:bg-slate"]:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Form inputs → frosted glass style */
+input, textarea, select {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #134e4a !important;
+  backdrop-filter: blur(8px) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: rgba(19, 78, 74, 0.5) !important;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #0f766e !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2) !important;
+}
+
+/* File input button styling */
+input[type="file"]::file-selector-button {
+  background-color: rgba(15, 118, 110, 0.15) !important;
+  color: #0f766e !important;
+  border: none !important;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== GLASS PANELS ===== */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 80, 70, 0.08) !important;
 }
 
 .glass-panel-hover {
   transition: all 0.3s ease-in-out;
 }
 .glass-panel-hover:hover {
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
   border-color: rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 12px 40px -10px rgba(0, 80, 70, 0.12) !important;
 }
 
-/* Override dark UI elements to white glass */
-.bg-slate-950, .bg-slate-900, .bg-slate-800 {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+.glass-card-danger {
+  background: rgba(225, 29, 72, 0.1) !important;
+  border: 1px solid rgba(225, 29, 72, 0.25) !important;
 }
-.border-slate-800, .border-slate-700, .border-slate-600 {
+.glass-card-success {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+.glass-card-warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+}
+.glass-card-accent {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ===== HEADER / NAVBAR ===== */
+header, nav {
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-/* Specific Emergency Cards */
-.glass-card-danger {
-  background: rgba(225, 29, 72, 0.2) !important;
-  border: 1px solid rgba(225, 29, 72, 0.4) !important;
-}
-
-.glass-card-success {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-}
-
-.glass-card-warning {
-  background: rgba(245, 158, 11, 0.2) !important;
-  border: 1px solid rgba(245, 158, 11, 0.4) !important;
-}
-
-.glass-card-accent {
-  background: rgba(255, 255, 255, 0.25) !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-}
-
-/* Radar & Pulsing Animations */
+/* ===== ANIMATIONS ===== */
 @keyframes ping-slow {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0.4;
-  }
-  100% {
-    transform: scale(0.95);
-    opacity: 0.8;
-  }
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.4; }
+  100% { transform: scale(0.95); opacity: 0.8; }
 }
-
 .animate-pulse-slow {
   animation: ping-slow 3s infinite ease-in-out;
 }
 
 @keyframes scanline {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(1000%);
-  }
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
 }
-
 .animate-scan {
   animation: scanline 8s linear infinite;
 }
 
-/* Custom Scrollbars */
+/* ===== SCROLLBARS ===== */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(255, 255, 255, 0.1);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(15, 118, 110, 0.3);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.6);
+  background: rgba(15, 118, 110, 0.5);
 }
 
-/* Leaflet Custom Marker Fixes */
+/* ===== MAP / LEAFLET ===== */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background-color: #020617 !important;
+  background-color: #b2dfdb !important;
   border-radius: 0.75rem;
 }
-
 .leaflet-popup-content-wrapper {
-  background: rgba(15, 23, 42, 0.95) !important;
-  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #134e4a !important;
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 0.75rem !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 80, 70, 0.15) !important;
+}
+.leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.95) !important;
 }
 
-.leaflet-popup-tip {
-  background: rgba(15, 23, 42, 0.95) !important;
+/* ===== BADGES & TAGS ===== */
+[class*="bg-green-500"],
+[class*="bg-emerald-500"],
+[class*="bg-teal-500"] {
+  color: #ffffff !important;
+}
+
+/* Ensure gradient text stays visible */
+[class*="bg-gradient-to"] {
+  color: #ffffff !important;
+}
+
+/* Shadow overrides - remove dark shadows */
+[class*="shadow-cyan"],
+[class*="shadow-rose"],
+[class*="shadow-indigo"] {
+  --tw-shadow-color: rgba(0, 80, 70, 0.1) !important;
+}
+
+/* Footer */
+footer {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
 }
