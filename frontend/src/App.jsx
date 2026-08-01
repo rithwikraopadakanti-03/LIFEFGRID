@@ -197,67 +197,108 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <>
-            {activeTab === 'citizen-portal' && (
-              <CitizenPortal
-                currentUser={currentUser}
-                incidents={incidents}
-                resources={resources}
-                onOpenReportModal={() => setIsReportModalOpen(true)}
-                onOpenVoiceModal={handleOpenVoiceModal}
-                onOpenChatDrawer={handleOpenChatDrawer}
-              />
-            )}
+          (() => {
+            const isRestricted = ['team-ops', 'command', 'agents', 'digital-twin', 'health', 'timeline', 'analytics'].includes(activeTab);
+            const isCitizen = currentUser?.role === 'CITIZEN';
 
-            {activeTab === 'team-ops' && (
-              <TeamCommandCenter
-                currentUser={currentUser}
-                incidents={incidents}
-                onSelectIncident={(inc) => console.log('Selected', inc)}
-                onOpenChatDrawer={handleOpenChatDrawer}
-                onOpenVoiceModal={handleOpenVoiceModal}
-                onRefreshData={fetchData}
-              />
-            )}
+            if (isRestricted && isCitizen) {
+              return (
+                <div className="glass-panel p-12 rounded-3xl border border-rose-500/40 text-center space-y-4 max-w-xl mx-auto my-12 animate-in fade-in zoom-in-95">
+                  <div className="w-16 h-16 rounded-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40 mx-auto flex items-center justify-center">
+                    <ShieldAlert className="w-8 h-8 animate-pulse" />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="px-3 py-1 text-[10px] font-extrabold uppercase rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                      Access Control Restricted
+                    </span>
+                    <h3 className="text-xl font-black text-white">Emergency Control Room Authorized Only</h3>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed max-w-md mx-auto">
+                    The <strong>{activeTab.toUpperCase()}</strong> dashboard contains confidential medical surge telemetry, active tactical dispatch controls, and EOC network metrics.
+                  </p>
 
-            {activeTab === 'command' && (
-              <CommandCenter
-                incidents={incidents}
-                resources={resources}
-                analytics={analytics}
-                onSelectIncident={(inc) => console.log('Selected', inc)}
-                onOpenVoiceModal={handleOpenVoiceModal}
-                onOpenReportModal={() => setIsReportModalOpen(true)}
-              />
-            )}
+                  <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      onClick={() => handleLoginSuccess({ id: 2, full_name: "Capt. Vikram Singh", email: "fire@lifegrid.ai", phone: "+91 94400 10101", role: "EMERGENCY_TEAM", team_department: "FIRE" }, "demo")}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 cursor-pointer"
+                    >
+                      Switch to Responder Account
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('citizen-portal')}
+                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer"
+                    >
+                      Return to Citizen Portal
+                    </button>
+                  </div>
+                </div>
+              );
+            }
 
-            {activeTab === 'agents' && <AgentMatrix />}
+            return (
+              <>
+                {activeTab === 'citizen-portal' && (
+                  <CitizenPortal
+                    currentUser={currentUser}
+                    incidents={incidents}
+                    resources={resources}
+                    onOpenReportModal={() => setIsReportModalOpen(true)}
+                    onOpenVoiceModal={handleOpenVoiceModal}
+                    onOpenChatDrawer={handleOpenChatDrawer}
+                  />
+                )}
 
-            {activeTab === 'voice' && (
-              <div className="py-10 text-center space-y-4 glass-panel rounded-3xl p-8 border border-slate-800">
-                <h2 className="text-2xl font-extrabold text-white">Voice AI Interactive Call Simulator</h2>
-                <p className="text-sm text-slate-300 max-w-lg mx-auto">
-                  Test spoken multi-lingual (EN, HI, TE, TA, KN) emergency call handling and casualty parsing.
-                </p>
-                <button
-                  onClick={() => setIsVoiceModalOpen(true)}
-                  className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 cursor-pointer"
-                >
-                  Launch Interactive Call Simulation
-                </button>
-              </div>
-            )}
+                {activeTab === 'team-ops' && (
+                  <TeamCommandCenter
+                    currentUser={currentUser}
+                    incidents={incidents}
+                    onSelectIncident={(inc) => console.log('Selected', inc)}
+                    onOpenChatDrawer={handleOpenChatDrawer}
+                    onOpenVoiceModal={handleOpenVoiceModal}
+                    onRefreshData={fetchData}
+                  />
+                )}
 
-            {activeTab === 'digital-twin' && <DigitalTwin />}
+                {activeTab === 'command' && (
+                  <CommandCenter
+                    incidents={incidents}
+                    resources={resources}
+                    analytics={analytics}
+                    onSelectIncident={(inc) => console.log('Selected', inc)}
+                    onOpenVoiceModal={handleOpenVoiceModal}
+                    onOpenReportModal={() => setIsReportModalOpen(true)}
+                  />
+                )}
 
-            {activeTab === 'health' && <PublicHealth />}
+                {activeTab === 'agents' && <AgentMatrix />}
 
-            {activeTab === 'weather' && <WeatherIntel />}
+                {activeTab === 'voice' && (
+                  <div className="py-10 text-center space-y-4 glass-panel rounded-3xl p-8 border border-slate-800">
+                    <h2 className="text-2xl font-extrabold text-white">Voice AI Interactive Call Simulator</h2>
+                    <p className="text-sm text-slate-300 max-w-lg mx-auto">
+                      Test spoken multi-lingual (EN, HI, TE, TA, KN) emergency call handling and casualty parsing.
+                    </p>
+                    <button
+                      onClick={() => setIsVoiceModalOpen(true)}
+                      className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 cursor-pointer"
+                    >
+                      Launch Interactive Call Simulation
+                    </button>
+                  </div>
+                )}
 
-            {activeTab === 'timeline' && <EmergencyTimeline incidents={incidents} />}
+                {activeTab === 'digital-twin' && <DigitalTwin />}
 
-            {activeTab === 'analytics' && <Analytics />}
-          </>
+                {activeTab === 'health' && <PublicHealth />}
+
+                {activeTab === 'weather' && <WeatherIntel />}
+
+                {activeTab === 'timeline' && <EmergencyTimeline incidents={incidents} />}
+
+                {activeTab === 'analytics' && <Analytics />}
+              </>
+            );
+          })()
         )}
 
       </main>
