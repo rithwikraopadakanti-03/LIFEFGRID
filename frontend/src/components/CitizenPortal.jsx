@@ -44,8 +44,11 @@ export default function CitizenPortal({
     }
   }, []);
 
-  // Get citizen's active incident or most recent
-  const myIncident = incidents.find(i => i.status !== 'RESOLVED') || incidents[0];
+  // Match strictly the active citizen's own reported emergency
+  const myIncident = incidents.find(i => 
+    (i.user_id === currentUser?.id || i.reporter_phone === currentUser?.phone || i.reporter_name?.includes(currentUser?.full_name || '___')) &&
+    i.status !== 'RESOLVED'
+  );
 
   const handleSosClick = async () => {
     setSosTriggering(true);

@@ -250,72 +250,10 @@ def seed_database(db: Session):
         )
     ]
     db.add_all(zones)
-
-    # 8. Sample Active Incident with Chat Messages & Timeline
-    inc1 = Incident(
-        title="Severe Waterlog & Flash Flood Inundation",
-        category="Flood",
-        description="Water level risen to 3 feet near Sector 2 Underpass. 4 families trapped on rooftop.",
-        latitude=16.5095,
-        longitude=80.6455,
-        address="Sector 2 Underpass Road, Ward 11",
-        urgency="CRITICAL",
-        status="EN_ROUTE",
-        eta_seconds=420,
-        photo_url="https://images.unsplash.com/photo-1547683905-f686c993aae5?q=80&w=800&auto=format&fit=crop",
-        voice_transcript="पानी बहुत तेजी से बढ़ रहा है! हम छत पर हैं!",
-        reporter_name="Rithwik Rao (Citizen)",
-        reporter_phone="+91 98765 43210",
-        user_id=1,
-        is_verified=True,
-        is_fake=False,
-        is_duplicate=False,
-        confidence_score=0.96,
-        severity_score=9,
-        ai_summary="Flash flood rooftop trapped families verified via voice and photo telemetry.",
-        recommended_actions=["Dispatch ALS Ambulance Unit 108-A1", "Deploy Fire Boat Team"],
-        assigned_resources={
-            "ambulance": "ALS Rapid Ambulance Unit 108-A1",
-            "hospital": "District General Government Hospital",
-            "shelter": "Central High School Flood Relief Shelter #1"
-        },
-        assigned_team_name="ALS Rapid Unit 108-A1",
-        assigned_team_department="AMBULANCE"
-    )
-
-    db.add(inc1)
     db.commit()
-    db.refresh(inc1)
 
-    c1 = ChatMessage(
-        incident_id=inc1.id,
-        sender_name="Dr. Anita Reddy",
-        sender_role="ALS Paramedic Lead",
-        message="ALS Ambulance 108-A1 is en route to Sector 2 Underpass. ETA 7 minutes. Please stay on rooftop!"
-    )
-    c2 = ChatMessage(
-        incident_id=inc1.id,
-        sender_name="Rithwik Rao",
-        sender_role="Citizen",
-        message="Thank you! We are on the roof, 4 adults and 2 children."
-    )
-    db.add_all([c1, c2])
-
-    t1 = TimelineEvent(
-        incident_id=inc1.id,
-        agent_name="Citizen Voice Agent",
-        action="Distress Call Received",
-        details="Extracted coordinates (16.5095, 80.6455) & 6 stranded individuals.",
-        status_change="SUBMITTED"
-    )
-    t2 = TimelineEvent(
-        incident_id=inc1.id,
-        agent_name="Emergency Coordinator Agent",
-        action="Dispatched Rescue Team",
-        details="Matched nearest ALS Ambulance & Shelter. Crew marked EN_ROUTE.",
-        status_change="EN_ROUTE"
-    )
-    db.add_all([t1, t2])
-
+    # Clear Incident table on seed to ensure zero dummy incidents exist
+    db.query(Incident).delete()
     db.commit()
-    logger.info("Successfully seeded database with users, incidents, and chat messages.")
+
+    logger.info("Successfully seeded database with users and clean lifelines!")

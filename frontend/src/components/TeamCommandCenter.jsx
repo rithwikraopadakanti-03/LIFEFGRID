@@ -99,7 +99,18 @@ export default function TeamCommandCenter({
 
       {/* Incident Queue Cards with Action Buttons */}
       <div className="space-y-4">
-        {filteredIncidents.map((inc) => {
+        {filteredIncidents.length === 0 ? (
+          <div className="p-12 rounded-3xl bg-slate-900/60 border border-slate-800 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
+              <Shield className="w-6 h-6 text-emerald-400" />
+            </div>
+            <h3 className="font-extrabold text-base text-slate-100">All Clear — No Active Emergencies in Queue</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              No active distress calls or hazards reported for {selectedDept} department. Live tele-dispatch is monitoring 24/7.
+            </p>
+          </div>
+        ) : (
+          filteredIncidents.map((inc) => {
           const isUpdating = updatingId === inc.id;
 
           return (
@@ -213,7 +224,7 @@ export default function TeamCommandCenter({
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
 
     </div>
