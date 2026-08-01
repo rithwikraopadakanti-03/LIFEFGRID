@@ -275,39 +275,41 @@ async def generate_copilot_answer(question: str, context: Dict[str, Any]) -> str
     if raw and len(raw.strip()) > 10:
         return raw.strip()
 
+    import re
+
     q_lower = question.lower().strip()
+
+    # 1. Hospital & ICU Bed Queries (Higher Priority)
+    if any(h in q_lower for h in ["icu", "hospital", "bed", "trauma", "er"]):
+        return "District Government General Hospital ER currently has 28 available ICU beds and 16 ventilators on standby. Pre-alert is active for incoming trauma units."
     
-    # Greetings & General Conversational
-    if any(g in q_lower for g in ["hello", "hi", "hey", "greetings", "namaste", "good morning", "good evening"]):
-        return f"Hello! I am LifeGrid AI Copilot. The system is operating normally with {incidents_count} active incidents ({critical_count} critical). How can I assist you with emergency response or reporting today?"
-    
-    # Reporting Guidance
+    # 2. Ambulance & Fleet Queries
+    elif any(a in q_lower for a in ["ambulance", "als", "nearest", "vehicle", "fleet"]):
+        return "Apollo Emergency ALS (AP-09-AP-9901) is the nearest available unit equipped with ICU & ventilator support (ETA 3 mins). Government 108 ALS is also pre-positioned."
+
+    # 3. Reporting Guidance
     elif any(r in q_lower for r in ["want to report", "how to report", "report incident", "submit report", "file report", "hazard"]):
         return "To report an emergency: Click the red 1-Tap SOS button for instant emergency dispatch, or click '+ Report Incident' at the top to upload photos, attach a voice note, and auto-detect your GPS location."
 
-    # Critical & Active Incidents
+    # 4. Critical & Active Incidents
     elif "critical" in q_lower or "active incident" in q_lower:
         return f"There are currently {critical_count} critical incidents active requiring priority response. Check the Command Center feed for live location maps and multi-provider dispatch status."
-    
-    # Ambulance & Fleet Queries
-    elif any(a in q_lower for a in ["ambulance", "als", "nearest", "vehicle", "fleet"]):
-        return "Apollo Emergency ALS (AP-09-AP-9901) is the nearest available unit equipped with ICU & ventilator support (ETA 3 mins). Government 108 ALS is also pre-positioned."
-    
-    # Hospital & ICU Bed Queries
-    elif any(h in q_lower for h in ["icu", "hospital", "bed", "trauma", "er"]):
-        return "District Government General Hospital ER currently has 28 available ICU beds and 16 ventilators on standby. Pre-alert is active for incoming trauma units."
-    
-    # Flood & Disaster Queries
+
+    # 5. Flood & Disaster Queries
     elif any(f in q_lower for f in ["flood", "water", "river", "rain", "zone"]):
         return "Active flood monitoring is enabled for Sector 2 riverbank and low-lying zones. SDRF rescue boats and emergency shelters are pre-positioned."
-    
-    # Summary / Operations Queries
-    elif any(s in q_lower for s in ["summary", "daily", "status", "overview", "system"]):
-        return f"LifeGrid AI System Summary: {incidents_count} total active incidents ({critical_count} critical). Average AI verification time: 2.3 seconds with 97% confidence. All provider fleets operational."
-    
-    # Weather Queries
+
+    # 6. Weather Queries
     elif "weather" in q_lower:
         return "Current regional weather is 31.5°C with moderate humidity. Doppler radar telemetry is scanning every 30 seconds for localized flood risks."
+
+    # 7. Summary / Operations Queries
+    elif any(s in q_lower for s in ["summary", "daily", "status", "overview", "system"]):
+        return f"LifeGrid AI System Summary: {incidents_count} total active incidents ({critical_count} critical). Average AI verification time: 2.3 seconds with 97% confidence. All provider fleets operational."
+
+    # 8. Greetings & Conversational (Using strict word boundaries r'\bhi\b')
+    elif re.search(r'\b(hello|hi|hey|greetings|namaste)\b', q_lower):
+        return f"Hello! I am LifeGrid AI Copilot. The system is operating normally with {incidents_count} active incidents ({critical_count} critical). How can I assist you with emergency response or reporting today?"
 
     # Default Helpful Response
     else:
