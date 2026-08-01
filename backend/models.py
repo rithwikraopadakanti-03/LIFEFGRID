@@ -267,3 +267,16 @@ class DispatchRecommendation(Base):
     arrived_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AlertNotification(Base):
+    __tablename__ = "alert_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    target_group = Column(String, default="ALL_CITIZENS")
+    channel = Column(String, default="PUSH, SMS, EMAIL")
+    title = Column(String)
+    message = Column(Text)
+    urgency = Column(String, default="CRITICAL")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
