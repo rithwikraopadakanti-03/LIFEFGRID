@@ -28,8 +28,8 @@ export default function AICopilot({ currentUser }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversation]);
 
-  // Only show for emergency team
-  if (!currentUser || currentUser.role === 'CITIZEN') return null;
+  // Copilot is enabled for all users (Citizens & Emergency Team)
+  // if (!currentUser) return null;
 
   const handleAsk = async (q = null) => {
     const text = q || question.trim();

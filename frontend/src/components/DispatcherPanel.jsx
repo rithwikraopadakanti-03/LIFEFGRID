@@ -27,11 +27,12 @@ export default function DispatcherPanel({ incident, onDispatchSuccess, onOpenVoi
     }
   }, [incident]);
 
-  const handleApproveDispatch = async () => {
+  const handleApproveDispatch = async (provObj = null) => {
     if (!recommendation?.id) return;
     setApproving(true);
     try {
-      const res = await axios.post(`/api/dispatch/approve/${recommendation.id}`);
+      const payload = provObj ? { provider_name: provObj.provider_name, vehicle_id: provObj.vehicle_id } : {};
+      const res = await axios.post(`/api/dispatch/approve/${recommendation.id}`, payload);
       setRecommendation(res.data.recommendation);
       if (onDispatchSuccess) onDispatchSuccess(res.data.recommendation);
       if (window.refreshLifeGridData) window.refreshLifeGridData();
@@ -178,7 +179,7 @@ export default function DispatcherPanel({ incident, onDispatchSuccess, onOpenVoi
                 )}
 
                 <button
-                  onClick={() => onOpenVoiceModal && onOpenVoiceModal()}
+                  onClick={() => onOpenVoiceModal && onOpenVoiceModal(incident)}
                   className="py-3 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs flex items-center gap-1.5 border border-slate-700 cursor-pointer"
                 >
                   <PhoneCall className="w-3.5 h-3.5 text-cyan-400" />
@@ -231,7 +232,7 @@ export default function DispatcherPanel({ incident, onDispatchSuccess, onOpenVoi
                         </span>
                       ) : (
                         <button
-                          onClick={handleApproveDispatch}
+                          onClick={() => handleApproveDispatch(prov)}
                           className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
                         >
                           Select Provider

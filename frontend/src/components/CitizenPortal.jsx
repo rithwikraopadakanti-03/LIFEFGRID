@@ -90,19 +90,32 @@ export default function CitizenPortal({
   const handleSosClick = async () => {
     setSosTriggering(true);
 
-    try {
-      await axios.post('/api/incidents/sos', {
-        latitude: 16.5095,
-        longitude: 80.6480,
-        reporter_name: currentUser?.full_name || "Anonymous Citizen",
-        reporter_phone: currentUser?.phone || "+918121985059"
-      });
-      setSosActive(true);
-    } catch (e) {
-      console.error("SOS failed", e);
-      setSosActive(true);
-    } finally {
-      setSosTriggering(false);
+    const triggerSosApi = async (lat, lon) => {
+      try {
+        await axios.post('/api/incidents/sos', {
+          latitude: lat,
+          longitude: lon,
+          reporter_name: currentUser?.full_name || "Anonymous Citizen",
+          reporter_phone: currentUser?.phone || "+918121985059"
+        });
+        setSosActive(true);
+        if (window.refreshLifeGridData) window.refreshLifeGridData();
+      } catch (e) {
+        console.error("SOS failed", e);
+        setSosActive(true);
+      } finally {
+        setSosTriggering(false);
+      }
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => triggerSosApi(pos.coords.latitude, pos.coords.longitude),
+        () => triggerSosApi(16.5095, 80.6480),
+        { timeout: 4000 }
+      );
+    } else {
+      triggerSosApi(16.5095, 80.6480);
     }
   };
 

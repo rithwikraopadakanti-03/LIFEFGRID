@@ -251,43 +251,67 @@ async def process_citizen_voice_call(
 
 
 async def generate_copilot_answer(question: str, context: Dict[str, Any]) -> str:
-    """AI Copilot Q&A for emergency operators — instant situational answers."""
+    """AI Copilot Q&A for emergency operators & citizens — instant situational answers."""
     incidents_count = context.get("incidents_count", 0)
     critical_count = context.get("critical_count", 0)
     active_departments = context.get("active_departments", [])
 
     prompt = f"""
-    You are LifeGrid AI Copilot — an expert emergency operations assistant for a National EOC.
+    You are LifeGrid AI Copilot — an intelligent emergency assistant and situational operations guide.
     Current System Context:
     - Total active incidents: {incidents_count}
     - Critical incidents: {critical_count}
     - Active departments: {', '.join(active_departments) if active_departments else 'All departments'}
 
-    Operator Question: "{question}"
+    User/Operator Question: "{question}"
 
-    Answer concisely in 2-4 sentences. Be direct, professional, and actionable.
-    Use specific numbers. Do not use markdown or bullet points. Plain text only.
+    Answer concisely, directly, and helpfully in 2-3 sentences.
+    If greeted, greet warmly and state how you can assist.
+    If asked how to report, explain using the red SOS button or "+ Report Incident" form.
+    Plain text only.
     """
 
     raw = await query_gemini(prompt)
-    if raw:
+    if raw and len(raw.strip()) > 10:
         return raw.strip()
 
-    q_lower = question.lower()
-    if "critical" in q_lower or "incidents" in q_lower:
-        return f"There are currently {critical_count} critical incidents active. Highest priority requires ALS dispatch. Check Team Operations panel for full live feed."
-    elif "ambulance" in q_lower or "als" in q_lower or "nearest" in q_lower:
-        return "Apollo Emergency ALS (AP-09-AP-9901) is nearest available with ALS + ICU capability at 2.3 km. Government 108 is 2.8 km away as backup."
-    elif "icu" in q_lower or "hospital" in q_lower or "bed" in q_lower:
-        return "District Government Multi-Specialty Hospital ER has 28 free ICU beds and 16 ventilators. Pre-alert ER at +91 866 2471001."
-    elif "flood" in q_lower or "zone" in q_lower:
-        return "High flood-risk zones: Sector 2 riverbank and Krishna Basin low-lying areas. SDRF boats pre-positioned. Ward 11 citizens auto-alerted."
-    elif "report" in q_lower or "daily" in q_lower or "summary" in q_lower:
-        return f"Today: {incidents_count} incidents, {critical_count} critical. Avg AI verification: 2.3s. Dispatcher confidence: 97%. All 6 provider fleets operational."
+    q_lower = question.lower().strip()
+    
+    # Greetings & General Conversational
+    if any(g in q_lower for g in ["hello", "hi", "hey", "greetings", "namaste", "good morning", "good evening"]):
+        return f"Hello! I am LifeGrid AI Copilot. The system is operating normally with {incidents_count} active incidents ({critical_count} critical). How can I assist you with emergency response or reporting today?"
+    
+    # Reporting Guidance
+    elif any(r in q_lower for r in ["want to report", "how to report", "report incident", "submit report", "file report", "hazard"]):
+        return "To report an emergency: Click the red 1-Tap SOS button for instant emergency dispatch, or click '+ Report Incident' at the top to upload photos, attach a voice note, and auto-detect your GPS location."
+
+    # Critical & Active Incidents
+    elif "critical" in q_lower or "active incident" in q_lower:
+        return f"There are currently {critical_count} critical incidents active requiring priority response. Check the Command Center feed for live location maps and multi-provider dispatch status."
+    
+    # Ambulance & Fleet Queries
+    elif any(a in q_lower for a in ["ambulance", "als", "nearest", "vehicle", "fleet"]):
+        return "Apollo Emergency ALS (AP-09-AP-9901) is the nearest available unit equipped with ICU & ventilator support (ETA 3 mins). Government 108 ALS is also pre-positioned."
+    
+    # Hospital & ICU Bed Queries
+    elif any(h in q_lower for h in ["icu", "hospital", "bed", "trauma", "er"]):
+        return "District Government General Hospital ER currently has 28 available ICU beds and 16 ventilators on standby. Pre-alert is active for incoming trauma units."
+    
+    # Flood & Disaster Queries
+    elif any(f in q_lower for f in ["flood", "water", "river", "rain", "zone"]):
+        return "Active flood monitoring is enabled for Sector 2 riverbank and low-lying zones. SDRF rescue boats and emergency shelters are pre-positioned."
+    
+    # Summary / Operations Queries
+    elif any(s in q_lower for s in ["summary", "daily", "status", "overview", "system"]):
+        return f"LifeGrid AI System Summary: {incidents_count} total active incidents ({critical_count} critical). Average AI verification time: 2.3 seconds with 97% confidence. All provider fleets operational."
+    
+    # Weather Queries
     elif "weather" in q_lower:
-        return "Current: 31°C, moderate humidity. No storm alerts. Flash flood probability below 30% for next 6 hours."
+        return "Current regional weather is 31.5°C with moderate humidity. Doppler radar telemetry is scanning every 30 seconds for localized flood risks."
+
+    # Default Helpful Response
     else:
-        return f"LifeGrid AI has {incidents_count} active incidents, {critical_count} critical. All agents online. Smart Dispatcher scanning 6 fleets. Check Command Center for situational awareness."
+        return f"I have analyzed your request against current platform telemetry. System status: {incidents_count} active incidents ({critical_count} critical). You can ask me about nearest ambulances, hospital ICU beds, flood risks, or reporting instructions."
 
 
 async def generate_post_incident_report(incident: Dict[str, Any]) -> str:

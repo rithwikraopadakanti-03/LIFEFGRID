@@ -20,6 +20,7 @@ export default function VoiceAiModal({ isOpen, onClose, currentUser = null, targ
   const [loading, setLoading] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [ringCount, setRingCount] = useState(0);
   const bottomRef = useRef(null);
   const ringTimer = useRef(null);
@@ -109,8 +110,45 @@ export default function VoiceAiModal({ isOpen, onClose, currentUser = null, targ
     }
   };
 
+  const handleMicListen = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser. Please type your emergency message.');
+      return;
+    }
+
+    if (isListening) {
+      window._voiceAiRecognition?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = LANG_MAP[language] || 'en-US';
+    recognition.interimResults = true;
+
+    window._voiceAiRecognition = recognition;
+    setIsListening(true);
+
+    recognition.onresult = (event) => {
+      const text = Array.from(event.results).map(r => r[0].transcript).join('');
+      setSpeechText(text);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
   const handleEndCall = () => {
     window.speechSynthesis?.cancel();
+    window._voiceAiRecognition?.stop();
     setPhase('ended');
     setTimeout(() => onClose(), 1200);
   };
@@ -333,12 +371,24 @@ export default function VoiceAiModal({ isOpen, onClose, currentUser = null, targ
 
         {/* Input */}
         <div className="p-4 border-t border-slate-800 bg-slate-900 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleMicListen}
+            className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
+              isListening
+                ? 'bg-rose-600/30 text-rose-300 border-rose-500/60 animate-pulse'
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+            title="Speak into microphone"
+          >
+            <Mic className={`w-4 h-4 ${isListening ? 'text-rose-400 animate-bounce' : 'text-slate-400'}`} />
+          </button>
           <input
             type="text"
             value={speechText}
             onChange={e => setSpeechText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
-            placeholder="Type your message or use quick phrases above..."
+            placeholder={isListening ? 'Listening to your speech...' : 'Type or speak your emergency message...'}
             className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-green-500"
           />
           <button onClick={() => handleSend()} disabled={loading || !speechText.trim()}
