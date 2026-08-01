@@ -71,12 +71,62 @@ export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated
     'Building Collapse', 'Gas Leak', 'Power Failure', 'Water Issue'
   ];
 
-  const handleSimulateRecording = () => {
-    setIsRecording(true);
-    setTimeout(() => {
+  const handleRecordVoice = () => {
+    if (isRecording) {
+      // Stop recording
+      if (window._lifegridRecognition) {
+        window._lifegridRecognition.stop();
+        window._lifegridRecognition = null;
+      }
       setIsRecording(false);
-      setVoiceTranscript("Water level rising rapidly over street bridges! Send rescue boat unit immediately.");
-    }, 2000);
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+
+    window._lifegridRecognition = recognition;
+    setIsRecording(true);
+    setVoiceTranscript('');
+
+    let finalTranscript = '';
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interim = transcript;
+        }
+      }
+      setVoiceTranscript(finalTranscript + interim);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsRecording(false);
+      if (event.error === 'not-allowed') {
+        alert('Microphone access denied. Please allow microphone permission in your browser settings.');
+      }
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      window._lifegridRecognition = null;
+    };
+
+    recognition.start();
   };
 
   const handleVerifyFirst = async () => {
@@ -305,11 +355,11 @@ export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated
             
             <button
               type="button"
-              onClick={handleSimulateRecording}
-              className="px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer"
+              onClick={handleRecordVoice}
+              className={`px-3 py-2 rounded-xl ${isRecording ? 'bg-red-600/30 border-red-500/60' : 'bg-indigo-600/20 border-indigo-500/40'} hover:bg-indigo-600/30 text-indigo-300 border text-xs font-semibold flex items-center gap-1.5 shrink-0 cursor-pointer`}
             >
               <Mic className={`w-3.5 h-3.5 ${isRecording ? 'animate-bounce text-red-400' : ''}`} />
-              <span>{isRecording ? 'Listening...' : 'Record Voice'}</span>
+              <span>{isRecording ? '⏹ Stop Recording' : '🎙 Record Voice'}</span>
             </button>
           </div>
 
