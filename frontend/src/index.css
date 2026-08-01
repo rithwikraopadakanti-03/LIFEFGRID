@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  /* Override neon AI colors with standard enterprise colors */
-  --color-cyan-300: var(--color-sky-300);
-  --color-cyan-400: var(--color-sky-400);
-  --color-cyan-500: var(--color-sky-600);
-  --color-cyan-900: var(--color-sky-900);
-  --color-cyan-950: var(--color-slate-900);
+  /* Turquoise and White Theme Accents */
+  --color-cyan-300: #5eead4; /* teal-300 */
+  --color-cyan-400: #2dd4bf; /* teal-400 */
+  --color-cyan-500: #14b8a6; /* teal-500 - Turquoise */
+  --color-cyan-900: #0f766e; /* teal-700 */
+  --color-cyan-950: #042f2e; /* teal-950 */
   
-  --color-indigo-500: var(--color-blue-600);
-  --color-indigo-600: var(--color-blue-700);
+  --color-indigo-500: #0d9488; /* teal-600 */
+  --color-indigo-600: #0f766e; /* teal-700 */
   
-  --color-rose-400: var(--color-red-500);
-  --color-rose-500: var(--color-red-600);
-  --color-rose-700: var(--color-red-800);
-  --color-rose-950: var(--color-red-950);
+  --color-rose-400: #f43f5e;
+  --color-rose-500: #e11d48;
+  --color-rose-700: #be123c;
+  --color-rose-950: #881337;
 }
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #0f172a;
-    color: #f8fafc;
+    background-color: #f0fdfa; /* Very light turquoise/white */
+    color: #134e4a; /* Dark turquoise text */
   }
 
   code, pre {
@@ -29,43 +29,64 @@
   }
 }
 
-/* Standard Enterprise Panels (No Glassmorphism) */
+/* Force Light Theme Text Colors */
+.text-white, .text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
+  color: #134e4a !important; /* Dark turquoise text */
+}
+
+/* Maintain white text on buttons and colored badges where needed */
+button .text-white, .bg-cyan-500 .text-white, .bg-rose-500 .text-white, .bg-teal-500 .text-white, .bg-blue-500 .text-white {
+  color: #ffffff !important;
+}
+
+/* Force Light Theme Backgrounds */
+.bg-slate-950, .bg-slate-900, .bg-slate-800 {
+  background-color: #ffffff !important;
+}
+
+/* Force Light Theme Borders */
+.border-slate-800, .border-slate-700, .border-slate-600 {
+  border-color: #ccfbf1 !important; /* Light turquoise border */
+}
+
+/* Standard Enterprise Panels (Turquoise/White) */
 .glass-panel {
-  background: #1e293b;
-  border: 1px solid #334155;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: #ffffff !important;
+  border: 1px solid #99f6e4 !important; /* teal-200 */
+  box-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.1), 0 2px 4px -1px rgba(20, 184, 166, 0.06);
 }
 
 .glass-panel-hover {
   transition: all 0.2s ease-in-out;
 }
 .glass-panel-hover:hover {
-  background: #334155;
-  border-color: #475569;
+  background: #f0fdfa !important;
+  border-color: #5eead4 !important;
+  box-shadow: 0 10px 15px -3px rgba(20, 184, 166, 0.1);
 }
 
 .glass-card-danger {
-  background: #4c1d95; /* Deep purple instead of glowing red/rose */
-  border: 1px solid #5b21b6;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #fff1f2 !important;
+  border: 1px solid #fecdd3 !important;
+  box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.1);
 }
 
 .glass-card-success {
-  background: #064e3b;
-  border: 1px solid #065f46;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.1);
 }
 
 .glass-card-warning {
-  background: #78350f;
-  border: 1px solid #92400e;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1);
 }
 
 .glass-card-accent {
-  background: #1e3a8a;
-  border: 1px solid #1e40af;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #f0fdfa !important;
+  border: 1px solid #99f6e4 !important;
+  box-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.1);
 }
 
 /* Radar & Pulsing Animations */
