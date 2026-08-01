@@ -643,11 +643,11 @@ def get_weather(lat: Optional[float] = None, lon: Optional[float] = None, db: Se
     
     openweather_key = os.getenv("OPENWEATHER_API_KEY", os.getenv("VITE_OPENWEATHER_API_KEY", "")).strip()
     
-    live_temp = 31.5
-    live_wind = 42.0
-    live_rain = 78.5
-    humidity = 89.0
-    location_name = "Metro Emergency District"
+    live_temp = 28.5
+    live_wind = 12.0
+    live_rain = 0.0
+    humidity = 65.0
+    location_name = "Live Emergency Sector"
     summary = "Live Meteorological Doppler Radar Active"
 
     fetched_live = False
