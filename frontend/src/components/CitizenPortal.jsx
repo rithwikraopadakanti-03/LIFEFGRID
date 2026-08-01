@@ -16,6 +16,33 @@ export default function CitizenPortal({
 }) {
   const [sosTriggering, setSosTriggering] = useState(false);
   const [sosActive, setSosActive] = useState(false);
+  const [liveWeather, setLiveWeather] = useState(null);
+  const [locationName, setLocationName] = useState('Detecting Local GPS...');
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          try {
+            const res = await axios.get('/api/weather', { params: { lat, lon } });
+            setLiveWeather(res.data?.metric || null);
+            setLocationName(`GPS Coordinates (${lat.toFixed(2)}, ${lon.toFixed(2)})`);
+          } catch (e) {
+            console.error("Live weather fetch error", e);
+          }
+        },
+        async () => {
+          try {
+            const res = await axios.get('/api/weather');
+            setLiveWeather(res.data?.metric || null);
+            setLocationName("Metro Emergency District");
+          } catch (e) {}
+        }
+      );
+    }
+  }, []);
 
   // Get citizen's active incident or most recent
   const myIncident = incidents.find(i => i.status !== 'RESOLVED') || incidents[0];
@@ -193,11 +220,15 @@ export default function CitizenPortal({
         {/* Weather Brief */}
         <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase text-slate-400">Current Local Weather</span>
-            <h4 className="text-xl font-extrabold text-white">31.5°C • Heavy Downpour</h4>
-            <p className="text-xs text-amber-400 font-semibold">Flash Flood Alert Active in Basin</p>
+            <span className="text-[10px] font-bold uppercase text-slate-400">Current GPS Weather • {locationName}</span>
+            <h4 className="text-xl font-extrabold text-white">
+              {liveWeather ? `${liveWeather.temperature_c}°C • Live Telemetry` : '31.5°C • Heavy Downpour'}
+            </h4>
+            <p className="text-xs text-amber-400 font-semibold">
+              {liveWeather?.forecast_summary || 'Flash Flood Alert Active in Basin'}
+            </p>
           </div>
-          <CloudRain className="w-10 h-10 text-blue-400 shrink-0" />
+          <CloudRain className="w-10 h-10 text-cyan-400 shrink-0" />
         </div>
 
         {/* Quick Report Button */}

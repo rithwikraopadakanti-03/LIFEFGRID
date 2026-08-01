@@ -87,68 +87,92 @@ def seed_database(db: Session):
     db.add_all(users)
     db.commit()
 
-    # 2. Resources
+    # 2. Authentic Emergency Lifelines
     resources = [
-        Resource(
-            name="District General Government Hospital",
-            type="Hospital",
-            latitude=16.5120,
-            longitude=80.6520,
-            address="M.G. Road, Sector 1, Central District",
-            contact_number="+91 866 2471001",
-            capacity=450,
-            current_occupancy=320,
-            status="AVAILABLE",
-            details={"icu_beds_available": 18, "ventilators": 12, "trauma_unit": True}
-        ),
-        Resource(
-            name="Central High School Flood Relief Shelter #1",
-            type="Shelter",
-            latitude=16.5180,
-            longitude=80.6440,
-            address="School Road, Ward 12",
-            contact_number="+91 98480 11223",
-            capacity=800,
-            current_occupancy=140,
-            status="AVAILABLE",
-            details={"food_supplies": "3 Days", "clean_water": "15,000 Liters"}
-        ),
-        Resource(
-            name="ALS Rapid Ambulance Unit 108-A1",
-            type="Ambulance",
-            latitude=16.5080,
-            longitude=80.6490,
-            address="Stationed at Sector 2 Junction",
-            contact_number="+91 108",
-            capacity=2,
-            current_occupancy=0,
-            status="AVAILABLE",
-            details={"type": "Advanced Life Support", "oxygen": True}
-        ),
-        Resource(
-            name="District Main Fire & Rescue Station",
-            type="FireStation",
-            latitude=16.5040,
-            longitude=80.6580,
-            address="Fire Station Road, East Zone",
-            contact_number="+91 101",
-            capacity=50,
-            current_occupancy=10,
-            status="AVAILABLE",
-            details={"fire_tenders": 6, "boat_rescue_teams": 4}
-        ),
-        Resource(
-            name="Central District Police Control Room",
-            type="Police",
-            latitude=16.5100,
-            longitude=80.6460,
-            address="Police Commissionerate HQ",
-            contact_number="+91 100",
-            capacity=200,
-            current_occupancy=40,
-            status="AVAILABLE",
-            details={"patrol_cars_active": 14}
-        )
+      Resource(
+        name="National Emergency Response System (112)",
+        type="Helpline",
+        latitude=16.5100,
+        longitude=80.6480,
+        address="All-in-One National SOS Emergency Command",
+        contact_number="112",
+        capacity=1000,
+        current_occupancy=120,
+        status="AVAILABLE",
+        details={"service": "Police, Fire, Ambulance Unified SOS Dispatch"}
+      ),
+      Resource(
+        name="ALS Medical Emergency & Ambulance Service (108)",
+        type="Ambulance",
+        latitude=16.5080,
+        longitude=80.6490,
+        address="24/7 District ALS Rapid Ambulance Fleet Base",
+        contact_number="108",
+        capacity=50,
+        current_occupancy=14,
+        status="AVAILABLE",
+        details={"type": "Advanced Life Support & Paramedic ICU", "oxygen": True}
+      ),
+      Resource(
+        name="District Main Fire & Rescue Department (101)",
+        type="FireStation",
+        latitude=16.5040,
+        longitude=80.6580,
+        address="Main Headquarters Fire Tender & Hazmat Station",
+        contact_number="101",
+        capacity=40,
+        current_occupancy=8,
+        status="AVAILABLE",
+        details={"fire_tenders": 8, "water_cannons": 4, "boat_rescue_units": 4}
+      ),
+      Resource(
+        name="Police Control Room & Patrol Force (100)",
+        type="Police",
+        latitude=16.5120,
+        longitude=80.6460,
+        address="Central Police Commissionerate Control Room",
+        contact_number="100",
+        capacity=200,
+        current_occupancy=35,
+        status="AVAILABLE",
+        details={"patrol_units": 24, "rapid_action_force": True}
+      ),
+      Resource(
+        name="NHAI Express Highway Helpline (1033)",
+        type="HighwaySafety",
+        latitude=16.5200,
+        longitude=80.6400,
+        address="National Highway Authority Incident Patrol Unit",
+        contact_number="1033",
+        capacity=30,
+        current_occupancy=5,
+        status="AVAILABLE",
+        details={"highway_cranes": 4, "road_trauma_units": 2}
+      ),
+      Resource(
+        name="State Disaster Response Force (NDRF / SDRF - 1078)",
+        type="DisasterRescue",
+        latitude=16.5020,
+        longitude=80.6540,
+        address="Flood & Earthquake Heavy Rescue Battalion",
+        contact_number="1078",
+        capacity=150,
+        current_occupancy=20,
+        status="AVAILABLE",
+        details={"inflatable_boats": 12, "de-watering_pumps": 18}
+      ),
+      Resource(
+        name="District Government Multi-Specialty Hospital ER",
+        type="Hospital",
+        latitude=16.5140,
+        longitude=80.6520,
+        address="Trauma ER & Critical ICU Care Center",
+        contact_number="+91 866 2471001",
+        capacity=450,
+        current_occupancy=310,
+        status="AVAILABLE",
+        details={"icu_beds_free": 28, "ventilators_free": 16, "trauma_surgeons": 12}
+      )
     ]
     db.add_all(resources)
 

@@ -22,13 +22,14 @@ export default function App() {
   const [analytics, setAnalytics] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // User State
-  const [currentUser, setCurrentUser] = useState({
-    id: 1,
-    full_name: "Rithwik Rao",
-    email: "citizen@lifegrid.ai",
-    phone: "+91 8121985059",
-    role: "CITIZEN"
+  // User State initialized from localStorage (No auto-demo login on deploy)
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lifegrid_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
   });
 
   // Modals
@@ -69,6 +70,9 @@ export default function App() {
 
   const handleLoginSuccess = (user, token) => {
     setCurrentUser(user);
+    try {
+      localStorage.setItem("lifegrid_user", JSON.stringify(user));
+    } catch (e) {}
     if (user.role === 'EMERGENCY_TEAM') {
       setActiveTab('team-ops');
     } else {
@@ -78,6 +82,9 @@ export default function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    try {
+      localStorage.removeItem("lifegrid_user");
+    } catch (e) {}
   };
 
   const handleIncidentCreated = (newInc) => {
