@@ -157,23 +157,86 @@ async def process_citizen_voice_call(
         except Exception:
             pass
 
-    # High-quality fallback multi-lingual prompts
-    if language == "hi":
-        speech = "नमस्ते, मैं लाइफग्रिड एआई बोल रहा हूँ। घबराएं नहीं, आपकी लोकेशन पर आपातकालीन टीम भेजी जा रही है। कृपया ऊंचे स्थान पर रहें। क्या आपके पास कोई घायल व्यक्ति है? बच्चे या बुजुर्ग उपस्थित हैं?"
-    elif language == "te":
-        speech = "నమస్తే, నేను లైఫ్‌గ్రిడ్ AI ని మాట్లాడుతున్నాను. ఆందోళన చెందవద్దు, సహాయక బృందాలు బయలుదేరాయి. ఎవరైనా గాయపడ్డారా? పిల్లలు లేదా వృద్ధులు ఉన్నారా?"
-    elif language == "ta":
-        speech = "வணக்கம், நான் லைஃப்கிரிட் AI பேசுகிறேன். பதற்றமடைய வேண்டாம், அவசர உதவி டீம் உங்கள் இடத்திற்கு வந்து கொண்டிருக்கிறது. யாராவது காயம் அடைந்துள்ளார்களா?"
-    elif language == "kn":
-        speech = "నమస్కార, నాను లైఫ్‌గ్రిడ్ AI. హెదరబేಡಿ, అత్యవసర రక్షణా పడె రవానిసలాగిదె. యారాదరూ ಗಾಯಗೊಂಡಿದ್ದಾರೆಯೇ?"
+    # Intelligent NLP Fallback Processing
+    import re
+    text_lower = user_speech.lower()
+
+    # Extract digits or words for injured count
+    digit_matches = re.findall(r'\b\d+\b', text_lower)
+    word_num_map = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'several': 3, 'many': 4}
+    
+    injured_count = 0
+    if digit_matches:
+        injured_count = int(digit_matches[0])
     else:
-        speech = "Hello, this is LifeGrid AI. Stay calm. Emergency services have been dispatched to your location. Move to higher ground immediately. Is anyone injured near you, and are children or elderly present?"
+        for word, val in word_num_map.items():
+            if word in text_lower:
+                injured_count = val
+                break
+
+    has_injuries = any(kw in text_lower for kw in [
+        "injured", "injury", "hurt", "bleeding", "trapped", "accident", "casualty", 
+        "unconscious", "wound", "pain", "broken", "ghayal", "घाव", "गाయం", "గాయపడ్డారు"
+    ])
+
+    if has_injuries and injured_count == 0:
+        injured_count = 1
+
+    has_vulnerable = any(kw in text_lower for kw in [
+        "child", "children", "baby", "kid", "kids", "elderly", "old", "grandma", 
+        "grandpa", "mother", "family", "bacche", "बच्चे", "పిల్లలు"
+    ])
+
+    # Extract potential location name from speech
+    location_match = "Current Sector"
+    for loc_kw in ["bachupally", "underpass", "bridge", "sector 2", "highway", "riverbank", "kukatpally", "gachibowli", "hitech", "secunderabad"]:
+        if loc_kw in text_lower:
+            location_match = loc_kw.title()
+            break
+
+    # Categorize Incident
+    cat = "Medical Emergency"
+    dept = "AMBULANCE"
+    if any(kw in text_lower for kw in ["fire", "smoke", "gas", "blast", "explosion", "aag", "ఆగి"]):
+        cat = "Fire Emergency"
+        dept = "FIRE"
+    elif any(kw in text_lower for kw in ["flood", "water", "river", "drowning", "paani", "నీరు"]):
+        cat = "Flood Emergency"
+        dept = "DISASTER_RESPONSE"
+    elif any(kw in text_lower for kw in ["accident", "crash", "hit", "vehicle", "police"]):
+        cat = "Accident"
+        dept = "POLICE"
+
+    # Context-Aware Dynamic Speech Generation
+    if language == "hi":
+        if has_injuries:
+            speech = f"मैंने समझ लिया। {injured_count} घायल व्यक्तियों की सूचना दर्ज की गई है। 108 एम्बुलेंस और राहत दल को तुरंत रवाना कर दिया गया है। घायलों को स्थिर रखें और शांत रहें।"
+        elif "accident" in text_lower or "crash" in text_lower:
+            speech = f"{location_match} में दुर्घटना दर्ज कर ली गई है। ट्रैफिक पुलिस 100 और रिस्पॉन्स टीम मौके पर पहुंच रही है। क्या कोई वाहन में फंसा हुआ है?"
+        else:
+            speech = "लाइफग्रिड एआई आपातकालीन नियंत्रण केंद्र ने आपकी कॉल दर्ज कर ली है। निकटतम रिस्पॉन्स टीम आपकी लोकेशन पर भेजी जा रही है। कृपया सुरक्षित रहें।"
+    elif language == "te":
+        if has_injuries:
+            speech = f"అర్థమైంది. {injured_count} గాయపడిన వ్యక్తుల సమాచారం నమోదైంది. 108 అంబులెన్స్ మరియు రక్షణ బృందాలు మీ ప్రాంతానికి బయలుదేరాయి. ధైర్యంగా ఉండండి."
+        elif "accident" in text_lower:
+            speech = f"{location_match} వద్ద ప్రమాదం నమోదైంది. పోలీసు కంట్రోల్ రూమ్ 100 మరియు పెట్రోల్ వాహనం 4 నిమిషాల్లో చేరుకుంటున్నాయి."
+        else:
+            speech = "లైఫ్‌గ్రిడ్ AI ఎమర్జెンసీ కంట్రోల్ సెంటర్ మీ కాల్‌ను స్వీకరించింది. సమీప రక్షణ బృందం మీ GPS లొకేషన్‌కి బయలుదేరింది."
+    else:
+        # English Context-Aware Responses
+        if has_injuries and has_vulnerable:
+            speech = f"Understood. Noted {injured_count} casualty{'ies' if injured_count>1 else ''} with children present at {location_match}. ALS Ambulance 108 and Fire Rescuers have been dispatched immediately. Keep everyone calm, apply pressure to any bleeding, and do not move anyone with neck pain."
+        elif has_injuries:
+            speech = f"Understood. Noted {injured_count} injured person{'s' if injured_count>1 else ''} at {location_match}. 108 ALS Ambulance dispatched with ETA 4 minutes. Keep victims calm and warm."
+        elif "accident" in text_lower or "crash" in text_lower:
+            speech = f"Emergency logged for {location_match}. Police Patrol 100 and Highway Emergency Units have been dispatched with ETA 4 minutes. Are there any vehicle fires, fuel leaks, or trapped victims?"
+        elif "flood" in text_lower or "water" in text_lower or "trapped" in text_lower:
+            speech = f"Flood hazard confirmed at {location_match}. SDRF Rescue Boat Unit and Fire Tenders dispatched with ETA 5 minutes. Climb to higher elevation immediately and stay away from open storm drains!"
+        else:
+            speech = f"Understood. LifeGrid Emergency Dispatcher has verified your report for {location_match}. Dispatching nearest emergency response fleet to your location with ETA 5 minutes. Stay calm and remain on the line."
 
     return {
         "ai_speech_text": speech,
-        "extracted_injuries": "injured" in user_speech.lower() or "घायल" in user_speech or "గాయం" in user_speech,
-        "extracted_injured_count": 2 if ("2" in user_speech or "two" in user_speech or "घायल" in user_speech) else 0,
-        "extracted_elderly_or_children": "child" in user_speech.lower() or "elderly" in user_speech.lower() or "बच्चे" in user_speech or "పిల్లలు" in user_speech,
         "summary": f"Citizen called regarding emergency ({language.upper()}). AI guided them to safe elevation, confirmed emergency crew dispatch, and recorded casualty status.",
         "recommended_shelter": "Central High School Emergency Shelter",
         "recommended_hospital": "District Government General Hospital",

@@ -93,8 +93,8 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
               <PhoneCall className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base text-white">OmniDimension Voice AI Engine</h3>
-              <p className="text-xs text-slate-400">Autonomous Low-Latency Conversational Emergency Agent</p>
+              <h3 className="font-extrabold text-base text-white">LifeGrid AI Voice Dispatcher</h3>
+              <p className="text-xs text-slate-400">Autonomous National EOC Conversational Dispatcher</p>
             </div>
           </div>
 
@@ -131,7 +131,7 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-semibold text-slate-200">Call Connected: Citizen (+91 98765 43210)</span>
+            <span className="text-xs font-semibold text-slate-200">Call Connected: Citizen Emergency Line</span>
           </div>
 
           {/* Audio Waveform Bars */}
@@ -169,25 +169,29 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
           {loading && (
             <div className="flex items-center gap-2 text-xs text-cyan-400 font-mono">
               <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
-              <span>Gemini Voice AI is reasoning & synthesizing response...</span>
+              <span>LifeGrid AI is parsing speech & dispatching units...</span>
             </div>
           )}
         </div>
 
-        {/* Extracted Structured Data Bar (If any) */}
+        {/* Extracted Structured Telemetry Bar */}
         {extractedData && (
-          <div className="p-3 bg-slate-900/90 border-t border-slate-800 text-[11px] grid grid-cols-3 gap-2">
+          <div className="p-3 bg-slate-900/90 border-t border-slate-800 text-[11px] grid grid-cols-4 gap-2">
             <div className="flex items-center gap-1.5 text-slate-300">
               <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Injuries: <strong className="text-amber-400">{extractedData.extracted_injuries ? 'YES' : 'NO'}</strong></span>
+              <span>Injuries: <strong className={extractedData.extracted_injuries ? "text-rose-400 font-extrabold" : "text-emerald-400"}>{extractedData.extracted_injuries ? 'YES' : 'NO'}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-300">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
-              <span>Injured Count: <strong className="text-white">{extractedData.extracted_injured_count}</strong></span>
+              <span>Injured: <strong className="text-white font-extrabold">{extractedData.extracted_injured_count || 0}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-300">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>ETA Help: <strong className="text-emerald-400">{extractedData.eta_minutes} mins</strong></span>
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>Sector: <strong className="text-amber-300">{extractedData.extracted_location || 'GPS Sector'}</strong></span>
+            </div>
+            <div className="flex items-center gap-1.5 text-slate-300">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <span>ETA: <strong className="text-emerald-400">{extractedData.eta_minutes || 4} mins</strong></span>
             </div>
           </div>
         )}
@@ -196,16 +200,22 @@ export default function VoiceAiModal({ isOpen, onClose, targetIncident = null })
         <div className="p-3 bg-slate-900/60 border-t border-slate-800/80 flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[10px] text-slate-400 uppercase font-bold shrink-0">Quick Spoken Simulation:</span>
           <button
-            onClick={() => handleSendSpeech("We are trapped near Sector 2 flood underpass, water is rising rapidly!")}
-            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap border border-slate-700 cursor-pointer"
-          >
-            "Trapped near underpass, water rising!"
-          </button>
-          <button
             onClick={() => handleSendSpeech("2 people are injured, children are with us. Send ambulance fast!")}
             className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap border border-slate-700 cursor-pointer"
           >
             "2 injured, children present!"
+          </button>
+          <button
+            onClick={() => handleSendSpeech("accident in Bachupally need assistance")}
+            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap border border-slate-700 cursor-pointer"
+          >
+            "accident in Bachupally need assistance"
+          </button>
+          <button
+            onClick={() => handleSendSpeech("We are trapped near Sector 2 flood underpass, water is rising rapidly!")}
+            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap border border-slate-700 cursor-pointer"
+          >
+            "Trapped near underpass, water rising!"
           </button>
         </div>
 
