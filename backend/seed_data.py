@@ -17,8 +17,9 @@ def seed_database(db: Session):
 
     logger.info("Updating LifeGrid EOC emergency dataset & lifelines...")
 
-    # Clear old resources and re-seed authentic lifelines
+    # Clear old resource & digital twin entries for clean sync
     db.query(Resource).delete()
+    db.query(DigitalTwinZone).delete()
     db.commit()
 
     if db.query(User).count() == 0:
@@ -81,66 +82,6 @@ def seed_database(db: Session):
         ]
         db.add_all(users)
         db.commit()
-
-    # 1. Seed Users
-    users = [
-        User(
-            email="citizen@lifegrid.ai",
-            password_hash=auth.hash_password("password123"),
-            full_name="Rithwik Rao",
-            phone="+91 98765 43210",
-            role="CITIZEN",
-            address="Flat 402, Riverbank Apartments, Ward 11",
-            emergency_contacts=[{"name": "Sujata Rao", "relation": "Family", "phone": "+91 98765 43211"}]
-        ),
-        User(
-            email="fire@lifegrid.ai",
-            password_hash=auth.hash_password("password123"),
-            full_name="Capt. Vikram Singh",
-            phone="+91 94400 10101",
-            role="EMERGENCY_TEAM",
-            team_department="FIRE",
-            address="District Main Fire Station HQ"
-        ),
-        User(
-            email="police@lifegrid.ai",
-            password_hash=auth.hash_password("password123"),
-            full_name="Inspector Rajesh Varma",
-            phone="+91 94400 10000",
-            role="EMERGENCY_TEAM",
-            team_department="POLICE",
-            address="Central Police Commissionerate"
-        ),
-        User(
-            email="ambulance@lifegrid.ai",
-            password_hash=auth.hash_password("password123"),
-            full_name="Dr. Anita Reddy (ALS Lead)",
-            phone="+91 94400 10808",
-            role="EMERGENCY_TEAM",
-            team_department="AMBULANCE",
-            address="ALS Unit 108 Fleet Base"
-        ),
-        User(
-            email="hospital@lifegrid.ai",
-            password_hash=auth.hash_password("password123"),
-            full_name="Dr. K. Srinivas (ER Chief)",
-            phone="+91 94400 88888",
-            role="EMERGENCY_TEAM",
-            team_department="HOSPITAL",
-            address="District General Hospital Trauma ER"
-        ),
-        User(
-            email="drf@lifegrid.ai",
-            password_hash=auth.hash_password("password123"),
-            full_name="Cmdr. Arjun Rao",
-            phone="+91 94400 99999",
-            role="EMERGENCY_TEAM",
-            team_department="DISASTER_RESPONSE",
-            address="Disaster Rescue Battalion Base"
-        )
-    ]
-    db.add_all(users)
-    db.commit()
 
     # 2. Authentic Emergency Lifelines
     resources = [
