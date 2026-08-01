@@ -1,13 +1,26 @@
 @import "tailwindcss";
 
+@theme {
+  /* Override neon AI colors with standard enterprise colors */
+  --color-cyan-300: var(--color-sky-300);
+  --color-cyan-400: var(--color-sky-400);
+  --color-cyan-500: var(--color-sky-600);
+  --color-cyan-900: var(--color-sky-900);
+  --color-cyan-950: var(--color-slate-900);
+  
+  --color-indigo-500: var(--color-blue-600);
+  --color-indigo-600: var(--color-blue-700);
+  
+  --color-rose-400: var(--color-red-500);
+  --color-rose-500: var(--color-red-600);
+  --color-rose-700: var(--color-red-800);
+  --color-rose-950: var(--color-red-950);
+}
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #060913;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(225, 29, 72, 0.06) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.06) 0px, transparent 50%);
-    background-attachment: fixed;
+    background-color: #0f172a;
     color: #f8fafc;
   }
 
@@ -16,50 +29,43 @@
   }
 }
 
-/* Glassmorphism & High-Impact EOC UI Tokens */
+/* Standard Enterprise Panels (No Glassmorphism) */
 .glass-panel {
-  background: rgba(13, 19, 34, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background: #1e293b;
+  border: 1px solid #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .glass-panel-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease-in-out;
 }
 .glass-panel-hover:hover {
-  background: rgba(20, 29, 50, 0.95);
-  border-color: rgba(244, 63, 94, 0.3);
-  box-shadow: 0 12px 40px -10px rgba(244, 63, 94, 0.2);
+  background: #334155;
+  border-color: #475569;
 }
 
 .glass-card-danger {
-  background: rgba(159, 18, 57, 0.2);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(244, 63, 94, 0.4);
-  box-shadow: 0 0 25px rgba(244, 63, 94, 0.15);
+  background: #4c1d95; /* Deep purple instead of glowing red/rose */
+  border: 1px solid #5b21b6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .glass-card-success {
-  background: rgba(6, 78, 59, 0.2);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+  background: #064e3b;
+  border: 1px solid #065f46;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .glass-card-warning {
-  background: rgba(120, 53, 15, 0.2);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+  background: #78350f;
+  border: 1px solid #92400e;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .glass-card-accent {
-  background: rgba(30, 58, 138, 0.25);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);
+  background: #1e3a8a;
+  border: 1px solid #1e40af;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Radar & Pulsing Animations */
