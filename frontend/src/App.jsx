@@ -17,6 +17,7 @@ import Analytics from './components/Analytics';
 import AICopilot from './components/AICopilot';
 import DemoModeController from './components/DemoModeController';
 import CommunitySafetyCard from './components/CommunitySafetyCard';
+import UserProfileModal from './components/UserProfileModal';
 import NotificationToast, { toast } from './components/NotificationToast';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
 
   // Modals: Open Login/Register Portal Modal automatically on load
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(true);
+  const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [selectedIncidentForVoice, setSelectedIncidentForVoice] = useState(null);
@@ -145,6 +147,7 @@ export default function App() {
         onOpenReportModal={() => setIsReportModalOpen(true)}
         onOpenVoiceModal={() => handleOpenVoiceModal(null)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
         onLogout={handleLogout}
         onRefreshData={fetchData}
         onOpenDemoMode={() => setIsDemoModeOpen(true)}
@@ -327,6 +330,13 @@ export default function App() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <UserProfileModal
+        isOpen={isUserProfileModalOpen}
+        onClose={() => setIsUserProfileModalOpen(false)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       <IncidentReportModal
