@@ -128,11 +128,17 @@ export default function TeamCommandCenter({
                   <h3 className="font-extrabold text-lg text-white">{inc.title}</h3>
                   <p className="text-xs text-slate-300 leading-relaxed">{inc.description}</p>
 
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-1">
                     <span className="flex items-center gap-1 text-slate-200">
                       <MapPin className="w-3.5 h-3.5 text-cyan-400" /> {inc.address || 'GPS Location Locked'}
                     </span>
-                    <span>Reporter: <strong className="text-white">{inc.reporter_name} ({inc.reporter_phone})</strong></span>
+                    
+                    {/* Prominent Citizen Phone Number Badge */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-950/80 border border-amber-500/50 text-amber-300 font-bold">
+                      <PhoneCall className="w-4 h-4 text-amber-400 animate-pulse" />
+                      <span>Citizen Contact: <a href={`tel:${inc.reporter_phone || '+918121985059'}`} className="underline text-white font-extrabold">{inc.reporter_name || 'Citizen'} ({inc.reporter_phone || '+91 8121985059'})</a></span>
+                    </div>
+
                     <span>Severity: <strong className="text-rose-400">{inc.severity_score}/10</strong></span>
                   </div>
                 </div>

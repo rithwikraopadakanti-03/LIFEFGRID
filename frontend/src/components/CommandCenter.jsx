@@ -283,10 +283,15 @@ export default function CommandCenter({
                   <h4 className="font-bold text-sm text-slate-100 mb-1 leading-snug">{inc.title}</h4>
                   <p className="text-xs text-slate-300 line-clamp-2 mb-3">{inc.description}</p>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
+                  <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80 gap-2">
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-cyan-400" />
                       <span className="truncate max-w-[140px]">{inc.address || 'Detected Coordinates'}</span>
+                    </span>
+
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-bold">
+                      <PhoneCall className="w-3 h-3 text-amber-400" />
+                      <span>{inc.reporter_phone || '+91 8121985059'}</span>
                     </span>
 
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
