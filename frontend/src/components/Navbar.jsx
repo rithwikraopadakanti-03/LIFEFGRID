@@ -27,6 +27,13 @@ export default function Navbar({
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
+  const isEmergencyTeam = currentUser?.role === 'EMERGENCY_TEAM';
+
+  const visibleTabs = tabs.filter(tab => {
+    if (isEmergencyTeam && tab.id === 'citizen-portal') return false;
+    return true;
+  });
+
   return (
     <header className="sticky top-0 z-50 bg-slate-950/95 border-b border-slate-800 px-4 lg:px-8 py-3 backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
@@ -107,7 +114,7 @@ export default function Navbar({
 
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/80 flex items-center gap-1 overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => {
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           const isRestricted = ['team-ops', 'command', 'agents', 'digital-twin', 'health', 'timeline', 'analytics'].includes(tab.id);

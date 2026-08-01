@@ -20,24 +20,63 @@ export default function CitizenPortal({
   const [locationName, setLocationName] = useState('Live GPS Telemetry (Metro District)');
 
   useEffect(() => {
-    // Initial fetch for immediate display
-    axios.get('/api/weather')
-      .then(res => setLiveWeather(res.data?.metric || null))
-      .catch(err => console.error("Weather fetch error", err));
+    const fetchWeatherForCoords = async (lat, lon, cityName = null) => {
+      try {
+        const res = await axios.get('/api/weather', { params: { lat, lon } });
+        const metric = res.data?.metric || {};
+        if (cityName) {
+          metric.location_name = cityName;
+        }
+        setLiveWeather(metric);
+        setLocationName(cityName || metric.location_name || `GPS (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`);
+      } catch (e) {
+        try {
+          const omRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+          const omData = await omRes.json();
+          const temp = omData.current_weather?.temperature;
+          setLiveWeather({
+            temperature_c: temp,
+            location_name: cityName || `GPS (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`,
+            forecast_summary: `Live GPS temperature active for ${cityName || 'your location'}`
+          });
+        } catch (err) {}
+      }
+    };
+
+    const getReverseCity = async (lat, lon) => {
+      try {
+        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+        const geoData = await geoRes.json();
+        const city = geoData.city || geoData.locality || geoData.principalSubdivision;
+        return city ? `${city}, ${geoData.countryName || ''}`.trim() : null;
+      } catch (e) {
+        return null;
+      }
+    };
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
-          try {
-            const res = await axios.get('/api/weather', { params: { lat, lon } });
-            setLiveWeather(res.data?.metric || null);
-            setLocationName(`GPS locked (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`);
-          } catch (e) {}
+          const city = await getReverseCity(lat, lon);
+          fetchWeatherForCoords(lat, lon, city);
         },
-        () => {},
-        { timeout: 3000 }
+        async () => {
+          try {
+            const ipRes = await fetch('https://ipapi.co/json/');
+            const ipData = await ipRes.json();
+            if (ipData.latitude && ipData.longitude) {
+              const cityName = `${ipData.city}, ${ipData.region}`;
+              fetchWeatherForCoords(ipData.latitude, ipData.longitude, cityName);
+            } else {
+              axios.get('/api/weather').then(res => setLiveWeather(res.data?.metric));
+            }
+          } catch (e) {
+            axios.get('/api/weather').then(res => setLiveWeather(res.data?.metric));
+          }
+        },
+        { timeout: 5000, enableHighAccuracy: true }
       );
     }
   }, []);
@@ -55,7 +94,7 @@ export default function CitizenPortal({
       await axios.post('/api/incidents/sos', {
         latitude: 16.5095,
         longitude: 80.6480,
-        reporter_name: currentUser?.full_name || "Rithwik Rao"
+        reporter_name: currentUser?.full_name || "Anonymous Citizen"
       });
       setSosActive(true);
     } catch (e) {

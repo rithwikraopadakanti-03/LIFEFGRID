@@ -38,24 +38,18 @@ async def dispatch_omnidimension_call(
         "Content-Type": "application/json"
     }
 
-    emergency_prompt = """You are LifeGrid AI Emergency Command Center Assistant calling citizen Rithwik Rao following an SOS Panic Button trigger.
-
-CRITICAL INSTRUCTIONS:
-1. You represent LifeGrid AI — Autonomous Emergency & Disaster OS.
-2. In whatever language the citizen speaks (Telugu, Hindi, English, Tamil, Kannada), ask: "What is your emergency situation?" / "ఏమి అత్యవసర పరిస్థితి వచ్చింది?" / "आपकी क्या आपात्कालीन स्थिति है?"
-3. Ask if anyone is injured, casualty count, and if children or elderly are present.
-4. Confirm nearest ALS Ambulance and Police crew dispatch.
-5. Provide immediate safety instructions.
-6. NEVER answer farming, crop, or agriculture questions. You are 100% LifeGrid Emergency Dispatcher."""
+    emergency_prompt = """You are LifeGrid AI Emergency Command Center Assistant calling a citizen following an SOS Panic Button trigger.
+You must immediately assess their safety, locate their exact position, ask if there are injuries or fire/water hazards, and inform them that emergency services (108 Ambulance / Fire / Police) are on the way.
+Be empathetic, calm, concise, and ultra-clear."""
 
     payload = {
         "agent_id": OMNIDIMENSION_AGENT_ID,
         "to_number": to_phone,
         "prompt": emergency_prompt,
-        "first_sentence": "Emergency SOS Alert! LifeGrid AI Emergency Command Center here. We received your emergency signal for Rithwik Rao. What is your emergency situation?",
+        "first_sentence": "Emergency SOS Alert! LifeGrid AI Emergency Command Center here. We received your emergency signal. What is your emergency situation?",
         "custom_variables": {
             "platform": "LifeGrid AI Emergency OS",
-            "citizen_name": "Rithwik Rao",
+            "citizen_name": "Valued Citizen",
             "system": "Emergency Crisis Response Engine"
         }
     }

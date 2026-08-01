@@ -50,6 +50,25 @@ export default function TeamCommandCenter({
     }
   };
 
+  if (currentUser?.role !== 'EMERGENCY_TEAM' && currentUser?.role !== 'ADMIN') {
+    return (
+      <div className="glass-panel p-12 rounded-3xl border border-rose-500/40 text-center space-y-4 max-w-xl mx-auto my-12 animate-in fade-in zoom-in-95">
+        <div className="w-16 h-16 rounded-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40 mx-auto flex items-center justify-center">
+          <ShieldAlert className="w-8 h-8 animate-pulse" />
+        </div>
+        <div className="space-y-1">
+          <span className="px-3 py-1 text-[10px] font-extrabold uppercase rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
+            Emergency Team Access Only
+          </span>
+          <h3 className="text-xl font-black text-white">Department Dispatch Control Restricted</h3>
+        </div>
+        <p className="text-xs text-slate-300 leading-relaxed max-w-md mx-auto">
+          This dispatch operations dashboard is strictly reserved for verified Emergency Responders (Fire 101, Police 100, ALS Paramedics 108 & SDRF Forces).
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       

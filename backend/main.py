@@ -151,14 +151,14 @@ async def trigger_quick_sos(
     background_tasks: BackgroundTasks,
     latitude: float = 16.5095,
     longitude: float = 80.6455,
-    reporter_name: str = "Rithwik Rao",
+    reporter_name: str = "Citizen In Distress",
     db: Session = Depends(get_db)
 ):
     """Instant 1-Tap SOS Panic Button Trigger"""
     sos_inc = models.Incident(
-        title="SOS PANIC BUTTON ACTIVATED",
-        category="Medical Emergency",
-        description="Citizen Rithwik Rao pressed 1-Tap Emergency SOS Panic Button. Immediate dispatch required.",
+        title="🚨 1-Tap Red SOS Emergency",
+        category="SOS",
+        description="Citizen pressed 1-Tap Emergency SOS Panic Button. Immediate dispatch required.",
         latitude=latitude,
         longitude=longitude,
         address="Live GPS Coordinates",
@@ -610,7 +610,7 @@ async def process_voice_speech(payload: schemas.VoiceProcessRequest, db: Session
             address="Sector 2 Underpass / Riverbank Corridor",
             urgency="CRITICAL",
             status="AI_VERIFIED",
-            reporter_name="Rithwik Rao (Voice Caller)",
+            reporter_name="Citizen (Voice Caller)",
             reporter_phone=user_phone,
             voice_transcript=payload.user_speech,
             is_verified=True,

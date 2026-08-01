@@ -32,7 +32,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       const fakeUser = {
         id: 99,
         email: demoEmail,
-        full_name: demoRole === 'CITIZEN' ? 'Rithwik Rao' : `${demoDept} Lead Officer`,
+      full_name: demoRole === 'CITIZEN' ? 'Registered Citizen' : `${demoDept} Duty Officer`,
         phone: "+91 98765 43210",
         role: demoRole,
         team_department: demoDept
@@ -173,7 +173,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Rithwik Rao"
+                  placeholder="e.g. Alex Morgan"
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs"
                 />
               </div>

@@ -77,6 +77,12 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (currentUser?.role === 'EMERGENCY_TEAM' && activeTab === 'citizen-portal') {
+      setActiveTab('team-ops');
+    }
+  }, [currentUser, activeTab]);
+
   const handleLoginSuccess = (user, token) => {
     setCurrentUser(user);
     try {
@@ -174,34 +180,21 @@ export default function App() {
               ))}
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-center gap-3 text-xs">
-              <span className="text-slate-400 font-semibold">Or Explore Direct Operations Demo:</span>
+            <div className="pt-4 border-t border-slate-800 text-center">
               <button
-                onClick={() => handleLoginSuccess({ id: 1, full_name: "Rithwik Rao", email: "citizen@lifegrid.ai", phone: "+91 8121985059", role: "CITIZEN" }, "demo")}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-cyan-400 font-bold hover:bg-slate-800 cursor-pointer"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 font-bold text-xs hover:bg-slate-800 cursor-pointer"
               >
-                Launch Citizen Demo
-              </button>
-              <button
-                onClick={() => handleLoginSuccess({ id: 2, full_name: "Capt. Vikram Singh", email: "fire@lifegrid.ai", phone: "+91 94400 10101", role: "EMERGENCY_TEAM", team_department: "FIRE" }, "demo")}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-rose-400 font-bold hover:bg-slate-800 cursor-pointer"
-              >
-                Launch Fire Dept Demo
-              </button>
-              <button
-                onClick={() => handleLoginSuccess({ id: 3, full_name: "Inspector Rajesh Varma", email: "police@lifegrid.ai", phone: "+91 94400 10000", role: "EMERGENCY_TEAM", team_department: "POLICE" }, "demo")}
-                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-indigo-400 font-bold hover:bg-slate-800 cursor-pointer"
-              >
-                Launch Police Demo
+                Sign In with Official Department Credentials
               </button>
             </div>
           </div>
         ) : (
           (() => {
             const isRestricted = ['team-ops', 'command', 'agents', 'digital-twin', 'health', 'timeline', 'analytics'].includes(activeTab);
-            const isCitizen = currentUser?.role === 'CITIZEN';
+            const isAuthorizedTeam = currentUser?.role === 'EMERGENCY_TEAM' || currentUser?.role === 'ADMIN';
 
-            if (isRestricted && isCitizen) {
+            if (isRestricted && !isAuthorizedTeam) {
               return (
                 <div className="glass-panel p-12 rounded-3xl border border-rose-500/40 text-center space-y-4 max-w-xl mx-auto my-12 animate-in fade-in zoom-in-95">
                   <div className="w-16 h-16 rounded-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40 mx-auto flex items-center justify-center">
@@ -219,16 +212,10 @@ export default function App() {
 
                   <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
                     <button
-                      onClick={() => handleLoginSuccess({ id: 2, full_name: "Capt. Vikram Singh", email: "fire@lifegrid.ai", phone: "+91 94400 10101", role: "EMERGENCY_TEAM", team_department: "FIRE" }, "demo")}
+                      onClick={() => setIsAuthModalOpen(true)}
                       className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 cursor-pointer"
                     >
-                      Switch to Responder Account
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('citizen-portal')}
-                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer"
-                    >
-                      Return to Citizen Portal
+                      Authenticate as Emergency Responder
                     </button>
                   </div>
                 </div>

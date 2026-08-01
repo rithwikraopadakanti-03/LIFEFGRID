@@ -28,7 +28,7 @@ def seed_database(db: Session):
             User(
                 email="citizen@lifegrid.ai",
                 password_hash=auth.hash_password("password123"),
-                full_name="Rithwik Rao",
+                full_name="Citizen User",
                 phone="+91 8121985059",
                 role="CITIZEN",
                 address="Flat 402, Riverbank Apartments, Ward 11",
@@ -37,8 +37,8 @@ def seed_database(db: Session):
             User(
                 email="fire@lifegrid.ai",
                 password_hash=auth.hash_password("password123"),
-                full_name="Capt. Vikram Singh",
-                phone="+91 94400 10101",
+                full_name="Fire & Rescue Command Chief",
+                phone="101",
                 role="EMERGENCY_TEAM",
                 team_department="FIRE",
                 address="District Main Fire Station HQ"
@@ -46,8 +46,8 @@ def seed_database(db: Session):
             User(
                 email="police@lifegrid.ai",
                 password_hash=auth.hash_password("password123"),
-                full_name="Inspector Rajesh Varma",
-                phone="+91 94400 10000",
+                full_name="Police Control Room Chief",
+                phone="100",
                 role="EMERGENCY_TEAM",
                 team_department="POLICE",
                 address="Central Police Commissionerate"
@@ -55,8 +55,8 @@ def seed_database(db: Session):
             User(
                 email="ambulance@lifegrid.ai",
                 password_hash=auth.hash_password("password123"),
-                full_name="Dr. Anita Reddy (ALS Lead)",
-                phone="+91 94400 10808",
+                full_name="ALS Ambulance 108 Dispatch Lead",
+                phone="108",
                 role="EMERGENCY_TEAM",
                 team_department="AMBULANCE",
                 address="ALS Unit 108 Fleet Base"
@@ -64,7 +64,7 @@ def seed_database(db: Session):
             User(
                 email="hospital@lifegrid.ai",
                 password_hash=auth.hash_password("password123"),
-                full_name="Dr. Suresh Kumar (ER Director)",
+                full_name="District Government Hospital ER Director",
                 phone="+91 866 2471001",
                 role="EMERGENCY_TEAM",
                 team_department="HOSPITAL",
@@ -73,8 +73,8 @@ def seed_database(db: Session):
             User(
                 email="disaster@lifegrid.ai",
                 password_hash=auth.hash_password("password123"),
-                full_name="Cmdr. Arjun Rao",
-                phone="+91 94400 99999",
+                full_name="State Disaster Response Force Commander",
+                phone="1078",
                 role="EMERGENCY_TEAM",
                 team_department="DISASTER_RESPONSE",
                 address="Disaster Rescue Battalion Base"
