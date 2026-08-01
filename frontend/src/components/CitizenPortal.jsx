@@ -94,7 +94,8 @@ export default function CitizenPortal({
       await axios.post('/api/incidents/sos', {
         latitude: 16.5095,
         longitude: 80.6480,
-        reporter_name: currentUser?.full_name || "Anonymous Citizen"
+        reporter_name: currentUser?.full_name || "Anonymous Citizen",
+        reporter_phone: currentUser?.phone || "+918121985059"
       });
       setSosActive(true);
 

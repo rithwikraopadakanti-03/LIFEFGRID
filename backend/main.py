@@ -187,23 +187,27 @@ async def trigger_quick_sos(
         "police": matches.get("nearest_police", {}).get("name") if matches.get("nearest_police") else "District Control Room"
     }
 
+    target_phone = phone if (phone and phone != "Registered Phone") else "+918121985059"
+    if not target_phone.startswith("+"):
+        target_phone = "+91" + target_phone.lstrip("0")
+
     t0 = models.TimelineEvent(
         incident_id=sos_inc.id,
         agent_name="OmniDimension Voice AI Agent",
         action="Emergency Voice Agent Dispatched",
-        details="1-Tap Emergency Panic button triggered. OmniDimension Realtime Voice AI agent call initiated to +918121985059.",
+        details=f"1-Tap Emergency Panic button triggered. OmniDimension Realtime Voice AI agent call initiated to {target_phone}.",
         status_change="AI_VERIFIED"
     )
     db.add(t0)
     db.commit()
     db.refresh(sos_inc)
 
-    # Dispatch OmniDimension Voice AI Agent session to Rithwik Rao (+918121985059)
+    # Dispatch OmniDimension Voice AI Agent session to citizen phone number
     background_tasks.add_task(
         omnidimension_service.dispatch_omnidimension_call,
-        "+918121985059",
+        target_phone,
         "en",
-        {"incident_id": sos_inc.id, "urgency": "CRITICAL", "reporter": "Rithwik Rao"}
+        {"incident_id": sos_inc.id, "urgency": "CRITICAL", "reporter": name}
     )
 
     return sos_inc
