@@ -125,6 +125,68 @@ export default function App() {
             <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-sm font-semibold text-cyan-400 font-mono">Initializing LifeGrid AI Operating System...</p>
           </div>
+        ) : !currentUser ? (
+          <div className="py-12 space-y-8 max-w-4xl mx-auto text-center">
+            <div className="space-y-3">
+              <span className="px-3.5 py-1 text-xs font-black uppercase tracking-wider rounded-full bg-rose-950/80 text-rose-400 border border-rose-800">
+                National Emergency Command System
+              </span>
+              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+                Select Your Emergency Operations Portal
+              </h2>
+              <p className="text-sm text-slate-400 max-w-xl mx-auto">
+                Authenticate to access real-time crisis dispatch, multi-agent AI verification, or citizen SOS emergency services.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
+              {[
+                { title: 'Citizen Emergency SOS', desc: '1-Tap panic alert, live hazard report & emergency lifelines', icon: '👤', dept: 'CITIZEN' },
+                { title: 'Fire & Rescue Dept (101)', desc: 'Fire tenders, hazmat control & flood rescue boats', icon: '🔥', dept: 'FIRE' },
+                { title: 'Police Control Room (100)', desc: 'Patrol fleet dispatch, traffic corridors & law enforcement', icon: '👮', dept: 'POLICE' },
+                { title: 'ALS Ambulance (108)', desc: 'Paramedic ICU fleet, emergency transport & triage', icon: '🚑', dept: 'AMBULANCE' },
+                { title: 'Hospital ER Ward', desc: 'ICU trauma bed availability & surgeon coordination', icon: '🏥', dept: 'HOSPITAL' },
+                { title: 'National EOC Admin', desc: 'District multi-agent decision matrix & temporal replay', icon: '⚡', dept: 'DISASTER_RESPONSE' }
+              ].map((portal, i) => (
+                <div
+                  key={i}
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-rose-500/60 transition-all cursor-pointer space-y-2 group shadow-lg"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">{portal.icon}</span>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300 group-hover:text-rose-400">
+                      Sign In $\rightarrow$
+                    </span>
+                  </div>
+                  <h3 className="font-extrabold text-sm text-white">{portal.title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{portal.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-center gap-3 text-xs">
+              <span className="text-slate-400 font-semibold">Or Explore Direct Operations Demo:</span>
+              <button
+                onClick={() => handleLoginSuccess({ id: 1, full_name: "Rithwik Rao", email: "citizen@lifegrid.ai", phone: "+91 8121985059", role: "CITIZEN" }, "demo")}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-cyan-400 font-bold hover:bg-slate-800 cursor-pointer"
+              >
+                Launch Citizen Demo
+              </button>
+              <button
+                onClick={() => handleLoginSuccess({ id: 2, full_name: "Capt. Vikram Singh", email: "fire@lifegrid.ai", phone: "+91 94400 10101", role: "EMERGENCY_TEAM", team_department: "FIRE" }, "demo")}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-rose-400 font-bold hover:bg-slate-800 cursor-pointer"
+              >
+                Launch Fire Dept Demo
+              </button>
+              <button
+                onClick={() => handleLoginSuccess({ id: 3, full_name: "Inspector Rajesh Varma", email: "police@lifegrid.ai", phone: "+91 94400 10000", role: "EMERGENCY_TEAM", team_department: "POLICE" }, "demo")}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-indigo-400 font-bold hover:bg-slate-800 cursor-pointer"
+              >
+                Launch Police Demo
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             {activeTab === 'citizen-portal' && (

@@ -15,17 +15,72 @@ def seed_database(db: Session):
     # Recreate tables safely
     Base.metadata.create_all(bind=engine)
 
-    if db.query(User).count() > 0:
-        logger.info("Database users already seeded. Skipping.")
-        return
+    logger.info("Updating LifeGrid EOC emergency dataset & lifelines...")
 
-    logger.info("Seeding LifeGrid AI v2.5 multi-role users & emergency dataset...")
-
-    # Clear any residual tables if empty
-    db.query(DigitalTwinZone).delete()
+    # Clear old resources and re-seed authentic lifelines
     db.query(Resource).delete()
-    db.query(Incident).delete()
     db.commit()
+
+    if db.query(User).count() == 0:
+        # Seed Users if missing
+        users = [
+            User(
+                email="citizen@lifegrid.ai",
+                password_hash=auth.hash_password("password123"),
+                full_name="Rithwik Rao",
+                phone="+91 8121985059",
+                role="CITIZEN",
+                address="Flat 402, Riverbank Apartments, Ward 11",
+                emergency_contacts=[{"name": "Sujata Rao", "relation": "Family", "phone": "+91 8121985059"}]
+            ),
+            User(
+                email="fire@lifegrid.ai",
+                password_hash=auth.hash_password("password123"),
+                full_name="Capt. Vikram Singh",
+                phone="+91 94400 10101",
+                role="EMERGENCY_TEAM",
+                team_department="FIRE",
+                address="District Main Fire Station HQ"
+            ),
+            User(
+                email="police@lifegrid.ai",
+                password_hash=auth.hash_password("password123"),
+                full_name="Inspector Rajesh Varma",
+                phone="+91 94400 10000",
+                role="EMERGENCY_TEAM",
+                team_department="POLICE",
+                address="Central Police Commissionerate"
+            ),
+            User(
+                email="ambulance@lifegrid.ai",
+                password_hash=auth.hash_password("password123"),
+                full_name="Dr. Anita Reddy (ALS Lead)",
+                phone="+91 94400 10808",
+                role="EMERGENCY_TEAM",
+                team_department="AMBULANCE",
+                address="ALS Unit 108 Fleet Base"
+            ),
+            User(
+                email="hospital@lifegrid.ai",
+                password_hash=auth.hash_password("password123"),
+                full_name="Dr. Suresh Kumar (ER Director)",
+                phone="+91 866 2471001",
+                role="EMERGENCY_TEAM",
+                team_department="HOSPITAL",
+                address="District Government Hospital ER"
+            ),
+            User(
+                email="disaster@lifegrid.ai",
+                password_hash=auth.hash_password("password123"),
+                full_name="Cmdr. Arjun Rao",
+                phone="+91 94400 99999",
+                role="EMERGENCY_TEAM",
+                team_department="DISASTER_RESPONSE",
+                address="Disaster Rescue Battalion Base"
+            )
+        ]
+        db.add_all(users)
+        db.commit()
 
     # 1. Seed Users
     users = [
