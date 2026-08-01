@@ -441,6 +441,24 @@ def get_agent_matrix(db: Session = Depends(get_db)):
             metrics_analyzed=10,
             recommendation="Pre-position volunteer rescue boats at Sector 2 low-lying basin."
         ),
+        schemas.AgentStatusSchema(
+            agent_name="Smart Emergency Dispatcher Agent",
+            role="Autonomous Multi-Provider Emergency Resource Matcher",
+            status="ACTIVE_DISPATCHING",
+            last_thought="Evaluating multi-provider fleet (108 Govt, Apollo, Fortis, Blinkit Demo) — scoring distance, ALS capability, availability, and ETA via Haversine GPS routing engine.",
+            confidence=0.97,
+            metrics_analyzed=6,
+            recommendation="Select Apollo Emergency ALS (AP-09-AP-9901) — nearest ALS unit with ICU ventilator, 2.3 km, ETA 6 mins via NH65 Corridor."
+        ),
+        schemas.AgentStatusSchema(
+            agent_name="Emergency Coordinator Agent",
+            role="Chief Autonomous Incident Commander",
+            status="COMMANDING",
+            last_thought="All 7 domain agents have reported. Synthesizing unified multi-department response plan. Fire, ALS, Police, Hospital ER locked.",
+            confidence=0.99,
+            metrics_analyzed=450,
+            recommendation="Execute Unified Multi-Department Rapid Response Dispatch across FIRE, ALS, POLICE, HOSPITAL ER."
+        ),
     ]
 
 
@@ -465,7 +483,9 @@ def coordinate_agents(db: Session = Depends(get_db)):
         f"Health Agent ({h_res.get('outbreak_risk_level', 'LOW')}): {h_res['recommendations'][0]}",
         f"Water Agent ({wt_res.get('status', 'STABLE')}): {wt_res['recommendations'][0]}",
         f"Infrastructure Agent: {i_res['recommendations'][0]}",
-        "Resource Agent: Haversine GIS shortest-path unit allocation locked."
+        "Resource Agent: Haversine GIS shortest-path unit allocation locked.",
+        "Smart Dispatcher Agent: Multi-provider scoring complete. Apollo Emergency ALS selected — ALS + ICU, 2.3 km, ETA 6 mins.",
+        "Emergency Coordinator Agent: Unified multi-department dispatch plan synthesized and activated."
     ]
 
     return {
@@ -735,6 +755,168 @@ def get_analytics(db: Session = Depends(get_db)):
             {"department": "DISASTER_RESPONSE", "sla_pct": 94.5, "avg_eta_min": 8.0}
         ]
     }
+
+
+# ==========================================
+# AI SMART EMERGENCY DISPATCHER ENDPOINTS
+# ==========================================
+
+@app.get("/api/dispatch/providers")
+def get_dispatch_providers(db: Session = Depends(get_db)):
+    providers = db.query(models.DispatchProvider).all()
+    if not providers:
+        return [
+            {
+                "id": 1,
+                "provider_name": "Apollo Emergency ALS",
+                "provider_category": "PRIVATE",
+                "vehicle_id": "AP-09-AP-9901",
+                "vehicle_type": "Ambulance",
+                "is_als": True,
+                "is_bls": True,
+                "has_icu": True,
+                "driver_name": "Officer Vikram Singh (ALS Chief)",
+                "contact_number": "+91 94400 10801",
+                "current_lat": 16.5100,
+                "current_lon": 80.6470,
+                "availability_status": "AVAILABLE",
+                "current_speed_kmh": 52.0,
+                "rating_score": 4.95
+            },
+            {
+                "id": 2,
+                "provider_name": "Government 108 ALS Service",
+                "provider_category": "GOVERNMENT",
+                "vehicle_id": "AP-09-AM-1082",
+                "vehicle_type": "Ambulance",
+                "is_als": True,
+                "is_bls": True,
+                "has_icu": False,
+                "driver_name": "Paramedic Lead Rajesh",
+                "contact_number": "108",
+                "current_lat": 16.5080,
+                "current_lon": 80.6490,
+                "availability_status": "AVAILABLE",
+                "current_speed_kmh": 48.0,
+                "rating_score": 4.8
+            },
+            {
+                "id": 3,
+                "provider_name": "Blinkit Rapid Ambulance (Demo)",
+                "provider_category": "DEMO_FLEET",
+                "vehicle_id": "AP-09-BK-1102",
+                "vehicle_type": "Ambulance",
+                "is_als": False,
+                "is_bls": True,
+                "has_icu": False,
+                "driver_name": "Rapid Rider Alex",
+                "contact_number": "+91 98765 11020",
+                "current_lat": 16.5075,
+                "current_lon": 80.6440,
+                "availability_status": "AVAILABLE",
+                "current_speed_kmh": 60.0,
+                "rating_score": 4.75
+            }
+        ]
+    return providers
+
+
+@app.post("/api/dispatch/recommend/{incident_id}")
+def generate_dispatch_recommendation(incident_id: int, db: Session = Depends(get_db)):
+    inc = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+        
+    providers_db = db.query(models.DispatchProvider).all()
+    providers = [p.__dict__ for p in providers_db] if providers_db else get_dispatch_providers(db)
+
+    dispatcher_agent = agents.DispatcherAgent()
+    rec = dispatcher_agent.recommend(inc.__dict__, providers)
+
+    if not rec or "best_provider" not in rec:
+        raise HTTPException(status_code=500, detail="Failed to calculate provider recommendation")
+
+    bp = rec["best_provider"]
+    
+    disp_rec = models.DispatchRecommendation(
+        incident_id=inc.id,
+        provider_id=bp.get("provider_id", 1),
+        provider_name=bp.get("provider_name"),
+        vehicle_id=bp.get("vehicle_id"),
+        driver_name=bp.get("driver_name"),
+        contact_number=bp.get("contact_number"),
+        vehicle_type=bp.get("vehicle_type"),
+        priority_level=rec.get("priority_level", "CRITICAL"),
+        required_services=rec.get("required_services", []),
+        distance_km=bp.get("distance_km"),
+        eta_minutes=bp.get("eta_minutes"),
+        traffic_level=bp.get("traffic_level", "LIGHT"),
+        best_route_name=bp.get("best_route_name", "NH65 Express Corridor"),
+        confidence_score=bp.get("confidence_score", 0.97),
+        recommendation_reason=rec.get("recommendation_reason"),
+        detailed_justification=rec.get("detailed_justification", []),
+        comparison_matrix=rec.get("comparison_matrix", []),
+        status="BEST_RESOURCE_FOUND"
+    )
+    db.add(disp_rec)
+    
+    inc.status = "BEST_RESOURCE_FOUND"
+    inc.assigned_team_name = bp.get("provider_name")
+    db.commit()
+
+    return disp_rec
+
+
+@app.get("/api/dispatch/incident/{incident_id}")
+def get_incident_dispatch(incident_id: int, db: Session = Depends(get_db)):
+    rec = db.query(models.DispatchRecommendation).filter(models.DispatchRecommendation.incident_id == incident_id).order_by(models.DispatchRecommendation.created_at.desc()).first()
+    if not rec:
+        # Generate on the fly
+        return generate_dispatch_recommendation(incident_id, db)
+    return rec
+
+
+@app.post("/api/dispatch/approve/{recommendation_id}")
+def approve_dispatch(recommendation_id: int, db: Session = Depends(get_db)):
+    rec = db.query(models.DispatchRecommendation).filter(models.DispatchRecommendation.id == recommendation_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+
+    rec.status = "VEHICLE_DISPATCHED"
+    rec.dispatched_at = datetime.utcnow()
+
+    inc = db.query(models.Incident).filter(models.Incident.id == rec.incident_id).first()
+    if inc:
+        inc.status = "VEHICLE_EN_ROUTE"
+        inc.assigned_team_name = rec.provider_name
+
+    db.commit()
+    return {"status": "DISPATCH_APPROVED", "recommendation": rec}
+
+
+@app.post("/api/dispatch/simulate-step/{recommendation_id}")
+def simulate_dispatch_step(recommendation_id: int, db: Session = Depends(get_db)):
+    rec = db.query(models.DispatchRecommendation).filter(models.DispatchRecommendation.id == recommendation_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+
+    status_sequence = ["BEST_RESOURCE_FOUND", "PROVIDER_ASSIGNED", "VEHICLE_DISPATCHED", "VEHICLE_EN_ROUTE", "VEHICLE_ARRIVED", "PATIENT_TRANSPORTED", "INCIDENT_CLOSED"]
+    current_idx = status_sequence.index(rec.status) if rec.status in status_sequence else 0
+    next_idx = min(len(status_sequence) - 1, current_idx + 1)
+    new_status = status_sequence[next_idx]
+
+    rec.status = new_status
+    inc = db.query(models.Incident).filter(models.Incident.id == rec.incident_id).first()
+    if inc:
+        if new_status in ["VEHICLE_DISPATCHED", "VEHICLE_EN_ROUTE"]:
+            inc.status = "VEHICLE_EN_ROUTE"
+        elif new_status == "VEHICLE_ARRIVED":
+            inc.status = "ARRIVED"
+        elif new_status in ["PATIENT_TRANSPORTED", "INCIDENT_CLOSED"]:
+            inc.status = "RESOLVED"
+
+    db.commit()
+    return {"status": new_status, "recommendation": rec}
 
 
 # ==========================================

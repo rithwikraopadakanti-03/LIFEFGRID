@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
+import DispatcherPanel from './DispatcherPanel';
+
 export default function TeamCommandCenter({ 
   currentUser, 
   incidents = [], 
@@ -199,7 +201,7 @@ export default function TeamCommandCenter({
                   ) : null}
 
                   {/* Action 3: Mark Arrived */}
-                  {inc.status === 'EN_ROUTE' ? (
+                  {inc.status === 'EN_ROUTE' || inc.status === 'VEHICLE_EN_ROUTE' ? (
                     <button
                       onClick={() => handleStatusChange(inc.id, 'ARRIVED')}
                       disabled={isUpdating}
@@ -210,7 +212,7 @@ export default function TeamCommandCenter({
                   ) : null}
 
                   {/* Action 4: Mark Resolved */}
-                  {inc.status === 'ARRIVED' || inc.status === 'EN_ROUTE' ? (
+                  {inc.status === 'ARRIVED' || inc.status === 'EN_ROUTE' || inc.status === 'VEHICLE_ARRIVED' ? (
                     <button
                       onClick={() => handleStatusChange(inc.id, 'RESOLVED')}
                       disabled={isUpdating}
@@ -241,6 +243,16 @@ export default function TeamCommandCenter({
                 </div>
 
               </div>
+
+              {/* AI Smart Dispatcher Panel — embedded below each incident card */}
+              <div className="mt-4 pt-4 border-t border-slate-800/60">
+                <DispatcherPanel
+                  incident={inc}
+                  onDispatchSuccess={() => onRefreshData && onRefreshData()}
+                  onOpenVoiceModal={() => onOpenVoiceModal && onOpenVoiceModal(inc)}
+                />
+              </div>
+
             </div>
           );
         }))}

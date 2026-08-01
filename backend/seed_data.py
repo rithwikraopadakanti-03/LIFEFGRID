@@ -5,7 +5,8 @@ from datetime import datetime
 from database import engine, SessionLocal, Base, DB_PATH
 from models import (
     User, Incident, TimelineEvent, Resource, WeatherMetric,
-    HealthMetric, WaterMetric, InfrastructureMetric, DigitalTwinZone, VoiceCallLog, AlertNotification, ChatMessage
+    HealthMetric, WaterMetric, InfrastructureMetric, DigitalTwinZone, VoiceCallLog, AlertNotification, ChatMessage,
+    DispatchProvider
 )
 import auth
 
@@ -20,6 +21,7 @@ def seed_database(db: Session):
     # Clear old resource & digital twin entries for clean sync
     db.query(Resource).delete()
     db.query(DigitalTwinZone).delete()
+    db.query(DispatchProvider).delete()
     db.commit()
 
     if db.query(User).count() == 0:
@@ -171,6 +173,107 @@ def seed_database(db: Session):
       )
     ]
     db.add_all(resources)
+
+    # 2b. Multi-Provider Dispatch Network
+    providers = [
+        DispatchProvider(
+            provider_name="Apollo Emergency ALS",
+            provider_category="PRIVATE",
+            vehicle_id="AP-09-AP-9901",
+            vehicle_type="Ambulance",
+            is_als=True,
+            is_bls=True,
+            has_icu=True,
+            driver_name="Officer Vikram Singh (ALS Chief)",
+            contact_number="+91 94400 10801",
+            current_lat=16.5100,
+            current_lon=80.6470,
+            availability_status="AVAILABLE",
+            current_speed_kmh=52.0,
+            rating_score=4.95
+        ),
+        DispatchProvider(
+            provider_name="Government 108 ALS Service",
+            provider_category="GOVERNMENT",
+            vehicle_id="AP-09-AM-1082",
+            vehicle_type="Ambulance",
+            is_als=True,
+            is_bls=True,
+            has_icu=False,
+            driver_name="Paramedic Lead Rajesh",
+            contact_number="108",
+            current_lat=16.5080,
+            current_lon=80.6490,
+            availability_status="AVAILABLE",
+            current_speed_kmh=48.0,
+            rating_score=4.8
+        ),
+        DispatchProvider(
+            provider_name="Fortis ICU Ambulance",
+            provider_category="HOSPITAL",
+            vehicle_id="AP-09-FT-8812",
+            vehicle_type="Ambulance",
+            is_als=True,
+            is_bls=True,
+            has_icu=True,
+            driver_name="Dr. Suresh (Trauma Lead)",
+            contact_number="+91 94400 10808",
+            current_lat=16.5150,
+            current_lon=80.6420,
+            availability_status="AVAILABLE",
+            current_speed_kmh=45.0,
+            rating_score=4.9
+        ),
+        DispatchProvider(
+            provider_name="Blinkit Rapid Ambulance (Demo)",
+            provider_category="DEMO_FLEET",
+            vehicle_id="AP-09-BK-1102",
+            vehicle_type="Ambulance",
+            is_als=False,
+            is_bls=True,
+            has_icu=False,
+            driver_name="Rapid Rider Alex",
+            contact_number="+91 98765 11020",
+            current_lat=16.5075,
+            current_lon=80.6440,
+            availability_status="AVAILABLE",
+            current_speed_kmh=60.0,
+            rating_score=4.75
+        ),
+        DispatchProvider(
+            provider_name="District Main Fire Tender (101)",
+            provider_category="GOVERNMENT",
+            vehicle_id="AP-09-FT-1011",
+            vehicle_type="FireTender",
+            is_als=False,
+            is_bls=True,
+            has_icu=False,
+            driver_name="Captain Arjun (Fire Chief)",
+            contact_number="101",
+            current_lat=16.5180,
+            current_lon=80.6410,
+            availability_status="AVAILABLE",
+            current_speed_kmh=40.0,
+            rating_score=4.9
+        ),
+        DispatchProvider(
+            provider_name="Police Control Patrol Unit (100)",
+            provider_category="GOVERNMENT",
+            vehicle_id="AP-09-PC-1004",
+            vehicle_type="Police",
+            is_als=False,
+            is_bls=True,
+            has_icu=False,
+            driver_name="Inspector Rao",
+            contact_number="100",
+            current_lat=16.5110,
+            current_lon=80.6465,
+            availability_status="AVAILABLE",
+            current_speed_kmh=55.0,
+            rating_score=4.85
+        )
+    ]
+    db.add_all(providers)
 
     # 3. Weather
     weather = WeatherMetric(

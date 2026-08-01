@@ -105,12 +105,16 @@ export default function CitizenPortal({
   };
 
   const statusSteps = [
-    { key: 'SUBMITTED', label: 'Report Submitted' },
+    { key: 'SUBMITTED', label: 'Emergency Submitted' },
     { key: 'AI_VERIFIED', label: 'AI Verified' },
-    { key: 'TEAM_ASSIGNED', label: 'Team Assigned' },
-    { key: 'EN_ROUTE', label: 'Team En Route' },
-    { key: 'ARRIVED', label: 'Arrived at Site' },
-    { key: 'RESOLVED', label: 'Resolved' }
+    { key: 'DISPATCHER_SEARCHING', label: 'Dispatcher Searching' },
+    { key: 'BEST_RESOURCE_FOUND', label: 'Best Resource Found' },
+    { key: 'PROVIDER_ASSIGNED', label: 'Provider Assigned' },
+    { key: 'VEHICLE_DISPATCHED', label: 'Vehicle Dispatched' },
+    { key: 'VEHICLE_EN_ROUTE', label: 'Vehicle En Route' },
+    { key: 'VEHICLE_ARRIVED', label: 'Vehicle Arrived' },
+    { key: 'PATIENT_TRANSPORTED', label: 'Patient Transported' },
+    { key: 'INCIDENT_CLOSED', label: 'Incident Closed' }
   ];
 
   const getStepIndex = (status) => {
@@ -118,13 +122,19 @@ export default function CitizenPortal({
       'SUBMITTED': 0,
       'VERIFYING': 0,
       'AI_VERIFIED': 1,
-      'ACTION_REQUIRED': 1,
-      'TEAM_ASSIGNED': 2,
-      'DISPATCHED': 2,
-      'EN_ROUTE': 3,
-      'IN_PROGRESS': 3,
-      'ARRIVED': 4,
-      'RESOLVED': 5
+      'DISPATCHER_SEARCHING': 2,
+      'BEST_RESOURCE_FOUND': 3,
+      'PROVIDER_ASSIGNED': 4,
+      'TEAM_ASSIGNED': 4,
+      'VEHICLE_DISPATCHED': 5,
+      'DISPATCHED': 5,
+      'VEHICLE_EN_ROUTE': 6,
+      'EN_ROUTE': 6,
+      'VEHICLE_ARRIVED': 7,
+      'ARRIVED': 7,
+      'PATIENT_TRANSPORTED': 8,
+      'INCIDENT_CLOSED': 9,
+      'RESOLVED': 9
     };
     return map[status] !== undefined ? map[status] : 1;
   };

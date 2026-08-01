@@ -211,14 +211,59 @@ class VoiceCallLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-class AlertNotification(Base):
-    __tablename__ = "alert_notifications"
+class DispatchProvider(Base):
+    __tablename__ = "dispatch_providers"
 
     id = Column(Integer, primary_key=True, index=True)
-    target_group = Column(String)
-    channel = Column(String)
-    title = Column(String)
-    message = Column(Text)
-    urgency = Column(String)
-    status = Column(String, default="SENT")
-    sent_at = Column(DateTime, default=datetime.utcnow)
+    provider_name = Column(String, index=True)  # "Government 108", "Apollo Emergency", "Fortis ALS", "Hospital Fleet", "Blinkit Rapid Ambulance"
+    provider_category = Column(String)  # GOVERNMENT, PRIVATE, HOSPITAL, DEMO_FLEET, VOLUNTEER
+    vehicle_id = Column(String, unique=True, index=True)  # "AP-09-AM-1082"
+    vehicle_type = Column(String)  # Ambulance, Police, FireTender, RescueBoat, VolunteerUnit
+    is_als = Column(Boolean, default=True)  # Advanced Life Support
+    is_bls = Column(Boolean, default=True)  # Basic Life Support
+    has_icu = Column(Boolean, default=False)
+    driver_name = Column(String, default="Senior Paramedic Chief")
+    contact_number = Column(String, default="108")
+    current_lat = Column(Float)
+    current_lon = Column(Float)
+    availability_status = Column(String, default="AVAILABLE")  # AVAILABLE, DISPATCHED, EN_ROUTE, ARRIVED, BUSY
+    current_speed_kmh = Column(Float, default=0.0)
+    rating_score = Column(Float, default=4.9)
+    last_updated = Column(DateTime, default=datetime.utcnow)
+
+
+class DispatchRecommendation(Base):
+    __tablename__ = "dispatch_recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    incident_id = Column(Integer, ForeignKey("incidents.id"))
+    provider_id = Column(Integer, ForeignKey("dispatch_providers.id"), nullable=True)
+    provider_name = Column(String)
+    vehicle_id = Column(String)
+    driver_name = Column(String)
+    contact_number = Column(String)
+    vehicle_type = Column(String)
+    
+    # Decision Matrix
+    priority_level = Column(String, default="CRITICAL")  # CRITICAL, URGENT, ROUTINE
+    required_services = Column(JSON, default=list)
+    distance_km = Column(Float)
+    eta_minutes = Column(Integer)
+    traffic_level = Column(String, default="MODERATE")
+    best_route_name = Column(String, default="NH65 Express Corridor")
+    confidence_score = Column(Float, default=0.97)  # 0.97 = 97%
+    
+    # Explainable AI Explanation ("WHY")
+    recommendation_reason = Column(Text)
+    detailed_justification = Column(JSON, default=list)
+    comparison_matrix = Column(JSON, default=list)
+    
+    # Live Status Progression: SUBMITTED -> AI_VERIFIED -> DISPATCHER_SEARCHING -> BEST_RESOURCE_FOUND -> PROVIDER_ASSIGNED -> VEHICLE_DISPATCHED -> VEHICLE_EN_ROUTE -> VEHICLE_ARRIVED -> PATIENT_TRANSPORTED -> INCIDENT_CLOSED
+    status = Column(String, default="BEST_RESOURCE_FOUND")
+    current_lat = Column(Float, nullable=True)
+    current_lon = Column(Float, nullable=True)
+    current_speed_kmh = Column(Float, default=0.0)
+    dispatched_at = Column(DateTime, nullable=True)
+    arrived_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

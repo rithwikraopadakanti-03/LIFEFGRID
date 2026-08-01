@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cpu, CloudRain, HeartPulse, Droplets, ShieldCheck, PhoneCall, Compass, CheckCircle2, Zap, ArrowRight, RefreshCw, X, ShieldAlert, Network, Layers } from 'lucide-react';
+import { Cpu, CloudRain, HeartPulse, Droplets, ShieldCheck, PhoneCall, Compass, CheckCircle2, Zap, ArrowRight, RefreshCw, X, ShieldAlert, Network, Layers, Truck } from 'lucide-react';
 import axios from 'axios';
 
 export default function AgentMatrix() {
@@ -47,6 +47,7 @@ export default function AgentMatrix() {
     if (name.includes("Infrastructure")) return ShieldCheck;
     if (name.includes("Voice")) return PhoneCall;
     if (name.includes("Resource")) return Compass;
+    if (name.includes("Dispatcher")) return Truck;
     return Cpu;
   };
 
@@ -60,7 +61,7 @@ export default function AgentMatrix() {
             <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
               Autonomous Multi-Agent System
             </span>
-            <span className="text-xs text-slate-400">7 Active Specialized AI Agents</span>
+            <span className="text-xs text-slate-400">8 Active Specialized AI Agents</span>
           </div>
           <h2 className="text-2xl font-extrabold text-white">LifeGrid AI Multi-Agent Matrix</h2>
           <p className="text-sm text-slate-300 max-w-2xl">
