@@ -27,11 +27,16 @@ export default function Navbar({
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
-  const isEmergencyTeam = currentUser?.role === 'EMERGENCY_TEAM';
+  const isEmergencyTeam = currentUser?.role === 'EMERGENCY_TEAM' || currentUser?.role === 'ADMIN';
 
   const visibleTabs = tabs.filter(tab => {
-    if (isEmergencyTeam && tab.id === 'citizen-portal') return false;
-    return true;
+    if (isEmergencyTeam) {
+      // Hide Citizen Portal for Emergency Department Responders
+      return tab.id !== 'citizen-portal';
+    } else {
+      // For Citizens, strictly show ONLY citizen-facing tabs: Citizen Portal, Weather Telemetry & Voice Dispatcher
+      return ['citizen-portal', 'weather', 'voice'].includes(tab.id);
+    }
   });
 
   return (
@@ -117,8 +122,6 @@ export default function Navbar({
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
-          const isRestricted = ['team-ops', 'command', 'agents', 'digital-twin', 'health', 'timeline', 'analytics'].includes(tab.id);
-          const isCitizen = currentUser?.role === 'CITIZEN';
 
           return (
             <button
@@ -127,18 +130,11 @@ export default function Navbar({
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-slate-100 border border-slate-700 shadow-sm'
-                  : isRestricted && isCitizen
-                  ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/40 border border-slate-900'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
               }`}
             >
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-rose-400' : 'text-slate-400'}`} />
               <span>{tab.label}</span>
-              {isRestricted && isCitizen && (
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 font-mono border border-slate-800">
-                  EOC Only
-                </span>
-              )}
             </button>
           );
         })}
