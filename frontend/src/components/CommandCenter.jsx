@@ -249,7 +249,24 @@ export default function CommandCenter({
           </div>
 
           <div className="space-y-3 overflow-y-auto max-h-[560px] pr-1">
-            {incidents.map((inc) => {
+            {incidents.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 text-emerald-400 mx-auto flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <h4 className="font-extrabold text-sm text-slate-100">Live Telemetry Stream Active</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  No active hazards reported in current district window. Monitoring Doppler radar, IoT sensors & citizen SOS calls 24/7.
+                </p>
+                <button
+                  onClick={onOpenReportModal}
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/20 cursor-pointer"
+                >
+                  + Report New Hazard
+                </button>
+              </div>
+            ) : (
+              incidents.map((inc) => {
               const isSelected = selectedInc?.id === inc.id;
               return (
                 <div
@@ -315,7 +332,7 @@ export default function CommandCenter({
                   )}
                 </div>
               );
-            })}
+            }))}
           </div>
 
         </div>

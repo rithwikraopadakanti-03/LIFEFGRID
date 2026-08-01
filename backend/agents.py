@@ -39,6 +39,21 @@ class WeatherIntelligenceAgent:
         elif flood_prob > 30:
             alert_level = "MODERATE"
 
+        if flood_prob > 70:
+            reasoning_str = f"Elevated precipitation rate of {rainfall}mm/24h combined with {humidity}% humidity yields a {round(flood_prob,1)}% flash flood risk vector."
+            recs = [
+                "Issue low-lying area evacuation alert for sectors 4 & 7",
+                "Pre-position drainage pump units at river basin culverts",
+                "Notify water management board to adjust dam discharge"
+            ]
+        else:
+            reasoning_str = f"Atmospheric telemetry stable. Live temperature {temp}°C, humidity {humidity}%, zero immediate flood vector."
+            recs = [
+                "Maintain automated meteorological radar monitoring 24/7",
+                "Routine GIS culvert drainage check scheduled",
+                "Atmospheric Doppler sync operational"
+            ]
+
         return {
             "agent_name": self.name,
             "role": self.role,
@@ -49,12 +64,8 @@ class WeatherIntelligenceAgent:
             "rainfall_24h_mm": rainfall,
             "wind_speed_kmh": wind,
             "confidence": 0.95,
-            "reasoning": f"Rainfall rate of {rainfall}mm/24h combined with {humidity}% humidity yields a {round(flood_prob,1)}% flash flood vector.",
-            "recommendations": [
-                "Issue low-lying area evacuation alert for sectors 4 & 7",
-                "Pre-position drainage pump units at river basin culverts",
-                "Notify water management board to adjust dam discharge"
-            ]
+            "reasoning": reasoning_str,
+            "recommendations": recs
         }
 
 

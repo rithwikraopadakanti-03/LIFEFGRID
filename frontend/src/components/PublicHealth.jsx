@@ -109,8 +109,8 @@ export default function PublicHealth() {
             <span className="text-xs text-slate-400">Live Telemetry</span>
           </div>
 
-          <div className="h-[320px] w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[320px] w-full pt-4 min-h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
@@ -119,7 +119,7 @@ export default function PublicHealth() {
                   contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.75rem' }}
                   itemStyle={{ color: '#f8fafc' }}
                 />
-                <Bar dataKey="ActiveCases" fill="#ec4899" radius={[6, 6, 0, 0]} name="Active Cases" />
+                <Bar dataKey="ActiveCases" fill="#f43f5e" radius={[6, 6, 0, 0]} name="Active Cases" />
                 <Bar dataKey="NewCases24h" fill="#f59e0b" radius={[6, 6, 0, 0]} name="New Cases (24h)" />
               </BarChart>
             </ResponsiveContainer>

@@ -7,9 +7,9 @@ export default function WeatherIntel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchWeatherData = async () => {
+    const fetchWeatherData = async (params = {}) => {
       try {
-        const res = await axios.get('/api/weather');
+        const res = await axios.get('/api/weather', { params });
         setData(res.data);
       } catch (e) {
         console.error("Failed to load weather data", e);
@@ -17,7 +17,16 @@ export default function WeatherIntel() {
         setLoading(false);
       }
     };
+
     fetchWeatherData();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => fetchWeatherData({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        () => {},
+        { timeout: 3000 }
+      );
+    }
   }, []);
 
   const metric = data?.metric || {};

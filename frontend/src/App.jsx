@@ -35,17 +35,17 @@ export default function App() {
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [selectedIncidentForChat, setSelectedIncidentForChat] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
       const [incRes, resRes, anaRes] = await Promise.all([
         axios.get('/api/incidents'),
         axios.get('/api/resources'),
         axios.get('/api/analytics')
       ]);
-      setIncidents(incRes.data);
-      setResources(resRes.data);
-      setAnalytics(anaRes.data);
+      setIncidents(incRes.data || []);
+      setResources(resRes.data || []);
+      setAnalytics(anaRes.data || {});
     } catch (e) {
       console.error("Failed to load platform data", e);
     } finally {
@@ -54,12 +54,16 @@ export default function App() {
   };
 
   useEffect(() => {
-    window.refreshLifeGridData = fetchData;
-    fetchData();
+    window.refreshLifeGridData = () => fetchData(false);
+    fetchData(true);
+    const safetyTimer = setTimeout(() => setLoading(false), 1500);
     const interval = setInterval(() => {
-      fetchData();
+      fetchData(false);
     }, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(safetyTimer);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLoginSuccess = (user, token) => {

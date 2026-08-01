@@ -17,9 +17,14 @@ export default function CitizenPortal({
   const [sosTriggering, setSosTriggering] = useState(false);
   const [sosActive, setSosActive] = useState(false);
   const [liveWeather, setLiveWeather] = useState(null);
-  const [locationName, setLocationName] = useState('Detecting Local GPS...');
+  const [locationName, setLocationName] = useState('Live GPS Telemetry (Metro District)');
 
   useEffect(() => {
+    // Initial fetch for immediate display
+    axios.get('/api/weather')
+      .then(res => setLiveWeather(res.data?.metric || null))
+      .catch(err => console.error("Weather fetch error", err));
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
@@ -28,18 +33,11 @@ export default function CitizenPortal({
           try {
             const res = await axios.get('/api/weather', { params: { lat, lon } });
             setLiveWeather(res.data?.metric || null);
-            setLocationName(`GPS Coordinates (${lat.toFixed(2)}, ${lon.toFixed(2)})`);
-          } catch (e) {
-            console.error("Live weather fetch error", e);
-          }
-        },
-        async () => {
-          try {
-            const res = await axios.get('/api/weather');
-            setLiveWeather(res.data?.metric || null);
-            setLocationName("Metro Emergency District");
+            setLocationName(`GPS locked (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`);
           } catch (e) {}
-        }
+        },
+        () => {},
+        { timeout: 3000 }
       );
     }
   }, []);
