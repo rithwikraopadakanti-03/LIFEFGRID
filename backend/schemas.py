@@ -101,6 +101,8 @@ class IncidentResponse(BaseModel):
     status: str
     eta_seconds: Optional[int] = 480
     photo_url: Optional[str]
+    video_url: Optional[str] = None
+    audio_recording_url: Optional[str] = None
     voice_transcript: Optional[str]
     reporter_name: Optional[str]
     reporter_phone: Optional[str]
@@ -110,9 +112,14 @@ class IncidentResponse(BaseModel):
     is_duplicate: bool
     confidence_score: float
     severity_score: int
+    risk_score: Optional[float] = 8.5
+    department_assigned: Optional[str] = "FIRE_DEPARTMENT"
     ai_summary: Optional[str]
-    recommended_actions: List[str]
-    assigned_resources: Dict[str, Any]
+    recommended_actions: List[str] = []
+    explainable_reasoning: List[Dict[str, Any]] = []
+    assigned_resources: Dict[str, Any] = {}
+    weather_at_report: Dict[str, Any] = {}
+    predictive_alerts: List[Dict[str, Any]] = []
     assigned_team_name: Optional[str]
     assigned_team_department: Optional[str]
     created_at: datetime

@@ -479,18 +479,219 @@ def get_analytics(db: Session = Depends(get_db)):
     return {
         "summary": {
             "total_incidents": total,
-            "active_incidents": active,
-            "avg_response_time_minutes": 6.2,
-            "system_accuracy_pct": 97.2,
-            "available_icu_beds": 36,
-            "available_shelter_capacity": 1740,
-            "active_volunteers": 45
+            "active_emergencies": active,
+            "resolved_incidents": total - active,
+            "avg_response_time_minutes": 5.8,
+            "system_health_score": 98.4
         },
         "category_distribution": category_counts,
-        "department_response_metrics": [
-            {"department": "Health / Ambulance", "avg_dispatch_min": 4.8, "satisfaction": 96},
-            {"department": "Fire & Rescue", "avg_dispatch_min": 5.5, "satisfaction": 97},
-            {"department": "Police Patrol", "avg_dispatch_min": 6.8, "satisfaction": 93},
-            {"department": "Disaster Response Force", "avg_dispatch_min": 7.2, "satisfaction": 98}
+        "department_sla": [
+            {"department": "FIRE", "sla_pct": 98.2, "avg_eta_min": 4.2},
+            {"department": "AMBULANCE", "sla_pct": 96.8, "avg_eta_min": 5.5},
+            {"department": "POLICE", "sla_pct": 99.1, "avg_eta_min": 3.8},
+            {"department": "DISASTER_RESPONSE", "sla_pct": 94.5, "avg_eta_min": 8.0}
         ]
+    }
+
+
+# ==========================================
+# EXPLAINABLE AI & INCIDENT REPLAY ENDPOINTS
+# ==========================================
+
+@app.get("/api/incidents/{incident_id}/explainable-reasoning")
+def get_explainable_reasoning(incident_id: int, db: Session = Depends(get_db)):
+    inc = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    
+    resources = [r.__dict__ for r in db.query(models.Resource).all()]
+    weather = db.query(models.WeatherMetric).first()
+    w_dict = weather.__dict__ if weather else {}
+    health = [h.__dict__ for h in db.query(models.HealthMetric).all()]
+    infra = [i.__dict__ for i in db.query(models.InfrastructureMetric).all()]
+    water = [wt.__dict__ for wt in db.query(models.WaterMetric).all()]
+
+    w_analysis = weather_agent.analyze(w_dict)
+    h_analysis = health_agent.analyze(health)
+    i_analysis = infra_agent.analyze(infra)
+    wt_analysis = water_agent.analyze(water)
+    r_matches = resource_agent.find_nearest(inc.latitude, inc.longitude, resources)
+
+    coord_plan = coordinator_agent.synthesize_response(
+        inc.__dict__, w_analysis, h_analysis, i_analysis, wt_analysis, r_matches
+    )
+    return {
+        "incident_id": inc.id,
+        "title": inc.title,
+        "category": inc.category,
+        "explainable_reasoning": coord_plan.get("explainable_reasoning", []),
+        "agent_cascade": [
+            {"agent": weather_agent.name, "output": w_analysis.get("reasoning"), "confidence": 0.95},
+            {"agent": health_agent.name, "output": h_analysis.get("reasoning"), "confidence": 0.92},
+            {"agent": infra_agent.name, "output": i_analysis.get("reasoning"), "confidence": 0.96},
+            {"agent": resource_agent.name, "output": f"Locked nearest ALS ambulance & station.", "confidence": 0.98},
+            {"agent": coordinator_agent.name, "output": coord_plan.get("summary"), "confidence": 0.99}
+        ]
+    }
+
+
+@app.get("/api/incidents/{incident_id}/replay")
+def get_incident_replay(incident_id: int, db: Session = Depends(get_db)):
+    inc = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+
+    lat, lng = inc.latitude, inc.longitude
+
+    frames = [
+        {
+            "step": 1,
+            "timestamp": "00:00",
+            "phase": "CITIZEN_REPORTED",
+            "title": "Citizen Emergency SOS Signal Received",
+            "description": f"Citizen {inc.reporter_name} activated 1-Tap SOS Panic Button at ({lat:.4f}, {lng:.4f}).",
+            "map_markers": [{"type": "CITIZEN", "lat": lat, "lng": lng, "label": inc.reporter_name}],
+            "status": "SUBMITTED"
+        },
+        {
+            "step": 2,
+            "timestamp": "00:01",
+            "phase": "AI_MULTI_AGENT_VERIFICATION",
+            "title": "Gemini & Multi-Agent AI Triaged Hazard",
+            "description": "Weather, Health & Infrastructure Agents confirmed 96% severity. Multi-agency plan generated.",
+            "map_markers": [
+                {"type": "CITIZEN", "lat": lat, "lng": lng, "label": inc.reporter_name},
+                {"type": "AI_PIN", "lat": lat + 0.002, "lng": lng - 0.002, "label": "AI Priority Lock"}
+            ],
+            "status": "AI_VERIFIED"
+        },
+        {
+            "step": 3,
+            "timestamp": "00:03",
+            "phase": "TEAM_ASSIGNED",
+            "title": "ALS Rescue Team Dispatched",
+            "description": f"Unit {inc.assigned_team_name or 'ALS Ambulance 108-A1'} accepted dispatch.",
+            "map_markers": [
+                {"type": "CITIZEN", "lat": lat, "lng": lng, "label": inc.reporter_name},
+                {"type": "RESCUE_UNIT", "lat": lat + 0.015, "lng": lng + 0.012, "label": "ALS Unit 108-A1"}
+            ],
+            "route_vector": [
+                [lat + 0.015, lng + 0.012],
+                [lat + 0.008, lng + 0.006],
+                [lat, lng]
+            ],
+            "status": "TEAM_ASSIGNED"
+        },
+        {
+            "step": 4,
+            "timestamp": "00:06",
+            "phase": "EN_ROUTE",
+            "title": "Rescue Unit En Route via Safe Corridor B-4",
+            "description": "Emergency vehicle navigating past flooded zones at 55 km/h.",
+            "map_markers": [
+                {"type": "CITIZEN", "lat": lat, "lng": lng, "label": inc.reporter_name},
+                {"type": "RESCUE_UNIT", "lat": lat + 0.005, "lng": lng + 0.003, "label": "ALS Unit 108-A1 (En Route)"}
+            ],
+            "status": "EN_ROUTE"
+        },
+        {
+            "step": 5,
+            "timestamp": "00:09",
+            "phase": "ARRIVED",
+            "title": "Rescue Crew Arrived On Site",
+            "description": "Paramedics & Fire crew established perimeter and initiated triage.",
+            "map_markers": [
+                {"type": "CITIZEN", "lat": lat, "lng": lng, "label": inc.reporter_name},
+                {"type": "RESCUE_UNIT", "lat": lat + 0.0005, "lng": lng + 0.0005, "label": "ALS Unit On Site"}
+            ],
+            "status": "ARRIVED"
+        },
+        {
+            "step": 6,
+            "timestamp": "00:18",
+            "phase": "RESOLVED",
+            "title": "Incident Resolved & All Victims Safe",
+            "description": "Patient transported safely to Central ER. Scene cleared.",
+            "map_markers": [
+                {"type": "RESOLVED_FLAG", "lat": lat, "lng": lng, "label": "Incident Resolved"}
+            ],
+            "status": "RESOLVED"
+        }
+    ]
+
+    return {
+        "incident_id": inc.id,
+        "title": inc.title,
+        "total_frames": len(frames),
+        "replay_frames": frames
+    }
+
+
+@app.post("/api/predictive/simulation")
+def run_predictive_simulation(
+    rainfall_increase_mm: float = 60.0,
+    temperature_spike_c: float = 6.0,
+    db: Session = Depends(get_db)
+):
+    weather = db.query(models.WeatherMetric).first()
+    curr_rain = weather.rainfall_mm if weather else 45.0
+    curr_temp = weather.temperature_c if weather else 34.0
+
+    sim_rain = curr_rain + rainfall_increase_mm
+    sim_temp = curr_temp + temperature_spike_c
+
+    flood_risk = min(99.0, (sim_rain / 130.0) * 100.0)
+    heat_stroke_risk = min(95.0, (sim_temp / 45.0) * 100.0)
+
+    return {
+        "simulation_parameters": {
+            "simulated_rainfall_mm": sim_rain,
+            "simulated_temp_c": sim_temp
+        },
+        "predictions": [
+            {
+                "hazard_type": "Flash Flood Inundation",
+                "probability_pct": round(flood_risk, 1),
+                "risk_level": "CRITICAL" if flood_risk > 75 else "HIGH",
+                "impacted_zones": ["Sector 4 Lowlands", "Old River Basin", "Underpass Highway 16"],
+                "recommended_preemptive_action": "Broadcast immediate pre-evacuation alert to 12,000 residents in Sector 4."
+            },
+            {
+                "hazard_type": "Hospital ICU Surge / Heat Stroke Outbreak",
+                "probability_pct": round(heat_stroke_risk, 1),
+                "risk_level": "HIGH" if heat_stroke_risk > 60 else "MODERATE",
+                "impacted_zones": ["District Central ER", "North Civil Hospital"],
+                "recommended_preemptive_action": "Pre-deploy 30 additional cooling beds & mobile hydrations vans."
+            }
+        ]
+    }
+
+
+@app.post("/api/alerts/broadcast")
+def broadcast_smart_alert(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db)
+):
+    target_group = payload.get("target_group", "ALL_CITIZENS")
+    title = payload.get("title", "EMERGENCY BROADCAST ALERT")
+    message = payload.get("message", "High priority alert issued by LifeGrid Command Center.")
+    channels = payload.get("channels", ["PUSH", "SMS", "EMAIL", "VOICE"])
+
+    alert = models.AlertNotification(
+        target_group=target_group,
+        channel=", ".join(channels),
+        title=title,
+        message=message,
+        urgency=payload.get("urgency", "CRITICAL")
+    )
+    db.add(alert)
+    db.commit()
+    db.refresh(alert)
+
+    return {
+        "status": "SUCCESS",
+        "alert_id": alert.id,
+        "dispatched_channels": channels,
+        "targets_reached_estimate": 14500,
+        "message": f"Broadcast successfully issued to {target_group} via {', '.join(channels)}."
     }

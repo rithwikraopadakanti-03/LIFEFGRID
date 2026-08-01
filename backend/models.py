@@ -35,21 +35,28 @@ class Incident(Base):
     eta_seconds = Column(Integer, default=480)  # Countdown timer in seconds
     
     photo_url = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
+    audio_recording_url = Column(String, nullable=True)
     voice_transcript = Column(Text, nullable=True)
     voice_audio_url = Column(String, nullable=True)
     reporter_name = Column(String, default="Anonymous Citizen")
     reporter_phone = Column(String, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
-    # AI Verification fields
+    # AI Verification & Explainable AI fields
     is_verified = Column(Boolean, default=False)
     is_fake = Column(Boolean, default=False)
     is_duplicate = Column(Boolean, default=False)
     confidence_score = Column(Float, default=0.85)
     severity_score = Column(Integer, default=7)  # 1 to 10
+    risk_score = Column(Float, default=8.5)
+    department_assigned = Column(String, nullable=True)
     ai_summary = Column(Text, nullable=True)
     recommended_actions = Column(JSON, default=list)
+    explainable_reasoning = Column(JSON, default=list)
     assigned_resources = Column(JSON, default=dict)
+    weather_at_report = Column(JSON, default=dict)
+    predictive_alerts = Column(JSON, default=list)
     
     # Dispatch Assignment details
     assigned_team_name = Column(String, nullable=True)

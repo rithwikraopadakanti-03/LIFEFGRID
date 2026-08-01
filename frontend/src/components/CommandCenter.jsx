@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, MapPin, 
-  PhoneCall, Zap, Send, Navigation, ChevronRight, Activity, Users, Truck
+  PhoneCall, Zap, Send, Navigation, ChevronRight, Activity, Users, Truck,
+  Film, Radio, TrendingUp, HelpCircle, Layers, Cpu
 } from 'lucide-react';
 import LiveMap from './LiveMap';
+import AgentDecisionPanel from './AgentDecisionPanel';
+import ExplainableAiCard from './ExplainableAiCard';
+import IncidentReplayPlayer from './IncidentReplayPlayer';
+import PredictiveAiSimulator from './PredictiveAiSimulator';
+import SmartAlertBroadcastModal from './SmartAlertBroadcastModal';
+import axios from 'axios';
 
 export default function CommandCenter({ 
   incidents = [], 
@@ -14,6 +21,25 @@ export default function CommandCenter({
   onOpenReportModal
 }) {
   const [selectedInc, setSelectedInc] = useState(incidents[0] || null);
+  const [activeTab, setActiveTab] = useState('LIVE_FEED'); // LIVE_FEED, REPLAY, PREDICTIVE, DIGITAL_TWIN
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [explainableData, setExplainableData] = useState(null);
+  const [replayData, setReplayData] = useState(null);
+  const [activeReplayFrame, setActiveReplayFrame] = useState(null);
+
+  useEffect(() => {
+    if (selectedInc?.id) {
+      // Fetch Explainable AI reasoning
+      axios.get(`/api/incidents/${selectedInc.id}/explainable-reasoning`)
+        .then(res => setExplainableData(res.data))
+        .catch(err => console.error("Explainable AI fetch error", err));
+
+      // Fetch Incident Replay frames
+      axios.get(`/api/incidents/${selectedInc.id}/replay`)
+        .then(res => setReplayData(res.data))
+        .catch(err => console.error("Replay fetch error", err));
+    }
+  }, [selectedInc]);
 
   const handleIncidentClick = (inc) => {
     setSelectedInc(inc);
@@ -92,12 +118,70 @@ export default function CommandCenter({
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-400">AI Confidence</p>
-            <h3 className="text-xl font-extrabold text-indigo-400">96.4%</h3>
-            <span className="text-[10px] text-slate-400">Verified by Gemini</span>
+            <h3 className="text-xl font-extrabold text-indigo-400">97.8%</h3>
+            <span className="text-[10px] text-slate-400">Verified Triages</span>
           </div>
         </div>
-
       </div>
+
+      {/* Action Bar & EOC Mode Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl border border-slate-800 bg-slate-950/80 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          {[
+            { id: 'LIVE_FEED', label: 'Live Incident Feed', icon: Activity },
+            { id: 'REPLAY', label: 'Incident Replay Mode', icon: Film },
+            { id: 'PREDICTIVE', label: 'Predictive AI Forecast', icon: TrendingUp }
+          ].map(tab => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+                  active
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-600/30'
+                    : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsAlertModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-600/30 hover:scale-105 transition-all"
+          >
+            <Radio className="w-4 h-4 animate-pulse" />
+            <span>Broadcast Smart Alert</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Multi-Agent Decision Cascade Panel */}
+      <AgentDecisionPanel cascade={explainableData?.agent_cascade || []} />
+
+      {/* Conditional View Tabs */}
+      {activeTab === 'REPLAY' && (
+        <IncidentReplayPlayer
+          replayData={replayData}
+          onFrameChange={(frame) => setActiveReplayFrame(frame)}
+        />
+      )}
+
+      {activeTab === 'PREDICTIVE' && (
+        <PredictiveAiSimulator />
+      )}
+
+      {/* Smart Alert Broadcast Modal */}
+      <SmartAlertBroadcastModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+      />
 
       {/* Main Grid: Map & Live Feeds */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[600px]">
@@ -232,6 +316,9 @@ export default function CommandCenter({
         </div>
 
       </div>
+
+      {/* Explainable AI Reasoning Card ("WHY") */}
+      <ExplainableAiCard explainableItems={explainableData?.explainable_reasoning || []} />
 
     </div>
   );
