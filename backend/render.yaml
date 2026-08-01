@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: lifegrid-ai-backend
+    env: python
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OMNIDIMENSION_API_KEY
+        sync: false
+      - key: OMNIDIMENSION_AGENT_ID
+        value: "134874"
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        value: "+18052629069"
