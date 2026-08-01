@@ -181,7 +181,7 @@ async def trigger_quick_sos(
 
     # Auto assign resources
     resources = [r.__dict__ for r in db.query(models.Resource).all()]
-    matches = resource_agent.find_nearest(latitude, longitude, resources)
+    matches = resource_agent.find_nearest(lat, lon, resources)
     sos_inc.assigned_resources = {
         "ambulance": matches.get("nearest_ambulance", {}).get("name") if matches.get("nearest_ambulance") else "ALS Unit 108-A1",
         "police": matches.get("nearest_police", {}).get("name") if matches.get("nearest_police") else "District Control Room"
