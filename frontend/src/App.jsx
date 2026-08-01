@@ -27,7 +27,7 @@ export default function App() {
     id: 1,
     full_name: "Rithwik Rao",
     email: "citizen@lifegrid.ai",
-    phone: "+91 98765 43210",
+    phone: "+91 8121985059",
     role: "CITIZEN"
   });
 

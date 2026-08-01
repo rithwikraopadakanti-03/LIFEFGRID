@@ -195,19 +195,12 @@ async def trigger_quick_sos(
     db.commit()
     db.refresh(sos_inc)
 
-    # Dispatch OmniDimension Realtime Conversational Voice Agent call
+    # Dispatch OmniDimension Voice AI Agent session to Rithwik Rao (+918121985059)
     background_tasks.add_task(
         omnidimension_service.dispatch_omnidimension_call,
         "+918121985059",
         "en",
         {"incident_id": sos_inc.id, "urgency": "CRITICAL", "reporter": "Rithwik Rao"}
-    )
-
-    # Also trigger Twilio PSTN backup
-    background_tasks.add_task(
-        twilio_service.make_emergency_call,
-        "+918121985059",
-        "Emergency SOS Alert! LifeGrid AI OmniDimension Agent has logged your emergency. Response teams dispatched."
     )
 
     return sos_inc

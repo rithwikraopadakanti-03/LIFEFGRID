@@ -22,11 +22,12 @@ export default function CitizenPortal({
 
   const handleSosClick = async () => {
     setSosTriggering(true);
+
     try {
       await axios.post('/api/incidents/sos', {
         latitude: 16.5095,
         longitude: 80.6480,
-        reporter_name: currentUser?.full_name || "Citizen SOS"
+        reporter_name: currentUser?.full_name || "Rithwik Rao"
       });
       setSosActive(true);
     } catch (e) {
