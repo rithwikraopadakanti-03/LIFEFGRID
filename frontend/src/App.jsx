@@ -22,18 +22,11 @@ export default function App() {
   const [analytics, setAnalytics] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // User State initialized from localStorage (No auto-demo login on deploy)
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem("lifegrid_user");
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
-  });
+  // User State: Default to null so Auth Modal opens immediately
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // Modals
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // Modals: Open Login/Register Portal Modal automatically on load
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(true);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [selectedIncidentForVoice, setSelectedIncidentForVoice] = useState(null);
