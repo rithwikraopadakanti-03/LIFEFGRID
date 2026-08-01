@@ -170,11 +170,13 @@ class VoiceProcessRequest(BaseModel):
 
 class VoiceProcessResponse(BaseModel):
     ai_speech_text: str
-    audio_synthesis_prompt: str
-    extracted_injuries: bool
-    extracted_injured_count: int
-    extracted_elderly_or_children: bool
-    summary: str
+    audio_synthesis_prompt: Optional[str] = ""
+    extracted_injuries: bool = False
+    extracted_injured_count: int = 0
+    extracted_elderly_or_children: bool = False
+    extracted_location: Optional[str] = "GPS Location"
+    extracted_category: Optional[str] = "Medical Emergency"
+    summary: Optional[str] = ""
     recommended_shelter: Optional[str] = None
     recommended_hospital: Optional[str] = None
     eta_minutes: int = 8

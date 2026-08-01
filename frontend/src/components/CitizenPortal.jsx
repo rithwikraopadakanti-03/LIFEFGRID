@@ -97,8 +97,18 @@ export default function CitizenPortal({
         reporter_name: currentUser?.full_name || "Anonymous Citizen"
       });
       setSosActive(true);
+
+      // Auto-open Voice AI modal so citizen hears AI guidance immediately
+      if (onOpenVoiceModal) {
+        setTimeout(() => onOpenVoiceModal(null), 600);
+      }
     } catch (e) {
       console.error("SOS failed", e);
+      // Still open voice modal even if API fails — citizen must get guidance
+      setSosActive(true);
+      if (onOpenVoiceModal) {
+        setTimeout(() => onOpenVoiceModal(null), 600);
+      }
     } finally {
       setSosTriggering(false);
     }

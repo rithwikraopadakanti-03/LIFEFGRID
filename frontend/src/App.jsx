@@ -338,6 +338,7 @@ export default function App() {
       <VoiceAiModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
+        currentUser={currentUser}
         targetIncident={selectedIncidentForVoice}
       />
 

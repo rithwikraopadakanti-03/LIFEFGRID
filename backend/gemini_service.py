@@ -237,10 +237,16 @@ async def process_citizen_voice_call(
 
     return {
         "ai_speech_text": speech,
-        "summary": f"Citizen called regarding emergency ({language.upper()}). AI guided them to safe elevation, confirmed emergency crew dispatch, and recorded casualty status.",
+        "audio_synthesis_prompt": f"Speak naturally in {selected_lang}: {speech[:120]}",
+        "extracted_injuries": has_injuries,
+        "extracted_injured_count": injured_count,
+        "extracted_elderly_or_children": has_vulnerable,
+        "extracted_location": location_match,
+        "extracted_category": cat,
+        "summary": f"Citizen called regarding {cat} ({language.upper()}). AI guided them, confirmed crew dispatch, recorded casualty status.",
         "recommended_shelter": "Central High School Emergency Shelter",
         "recommended_hospital": "District Government General Hospital",
-        "eta_minutes": 7
+        "eta_minutes": 6
     }
 
 
