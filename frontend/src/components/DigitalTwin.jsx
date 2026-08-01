@@ -20,6 +20,49 @@ export default function DigitalTwin() {
     fetchTwinData();
   }, []);
 
+  const defaultZones = [
+    {
+      id: 1,
+      zone_code: "ZONE-01-CENTRAL",
+      name: "Central Emergency & Metro Corridor",
+      population: 145000,
+      hospitals_count: 4,
+      schools_count: 12,
+      power_grid_status: "STABLE",
+      water_supply_status: "NORMAL",
+      overall_health_score: 92.4,
+      risk_level: "LOW"
+    },
+    {
+      id: 2,
+      zone_code: "ZONE-02-NORTH",
+      name: "North Riverbank & Coastal Basin",
+      population: 120000,
+      hospitals_count: 2,
+      schools_count: 8,
+      power_grid_status: "STABLE",
+      water_supply_status: "MONITORED",
+      overall_health_score: 88.0,
+      risk_level: "MODERATE"
+    },
+    {
+      id: 3,
+      zone_code: "ZONE-03-SOUTH",
+      name: "South Industrial & Expressway Hub",
+      population: 90000,
+      hospitals_count: 3,
+      schools_count: 6,
+      power_grid_status: "STABLE",
+      water_supply_status: "NORMAL",
+      overall_health_score: 94.5,
+      risk_level: "LOW"
+    }
+  ];
+
+  const displayZones = zones.length > 0 ? zones : defaultZones;
+  const totalPop = displayZones.reduce((acc, z) => acc + (z.population || 0), 0);
+  const avgHealth = (displayZones.reduce((acc, z) => acc + (z.overall_health_score || 90), 0) / displayZones.length).toFixed(1);
+
   return (
     <div className="space-y-6">
       
@@ -41,18 +84,18 @@ export default function DigitalTwin() {
         <div className="grid grid-cols-2 gap-3 text-center shrink-0">
           <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
             <span className="text-xs text-slate-400 font-semibold block">Total Monitored Pop</span>
-            <span className="text-xl font-extrabold text-white">355,000</span>
+            <span className="text-xl font-extrabold text-white">{totalPop.toLocaleString()}</span>
           </div>
           <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
             <span className="text-xs text-slate-400 font-semibold block">Grid Health Index</span>
-            <span className="text-xl font-extrabold text-emerald-400">82.5%</span>
+            <span className="text-xl font-extrabold text-emerald-400">{avgHealth}%</span>
           </div>
         </div>
       </div>
 
       {/* Digital Twin Zones Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {zones.map((zone) => {
+        {displayZones.map((zone) => {
           const isHighRisk = zone.risk_level === 'HIGH';
           return (
             <div
