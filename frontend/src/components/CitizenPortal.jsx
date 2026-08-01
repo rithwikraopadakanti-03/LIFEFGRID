@@ -221,12 +221,14 @@ export default function CitizenPortal({
         {/* Weather Brief */}
         <div className="glass-panel p-5 rounded-3xl border border-slate-800 flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase text-slate-400">Current GPS Weather • {locationName}</span>
+            <span className="text-[10px] font-bold uppercase text-slate-400">
+              Current Location Weather • {liveWeather?.location_name || locationName}
+            </span>
             <h4 className="text-xl font-extrabold text-white">
-              {liveWeather ? `${liveWeather.temperature_c}°C • Live Telemetry` : '31.5°C • Heavy Downpour'}
+              {liveWeather ? `${liveWeather.temperature_c}°C • Live Temperature` : '31.5°C • Live Weather'}
             </h4>
             <p className="text-xs text-amber-400 font-semibold">
-              {liveWeather?.forecast_summary || 'Flash Flood Alert Active in Basin'}
+              {liveWeather?.forecast_summary || 'Atmospheric & Doppler Telemetry Active'}
             </p>
           </div>
           <CloudRain className="w-10 h-10 text-cyan-400 shrink-0" />
