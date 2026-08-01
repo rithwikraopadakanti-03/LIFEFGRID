@@ -2,26 +2,26 @@
 
 @theme {
   /* Turquoise and White Theme Accents */
-  --color-cyan-300: #5eead4; /* teal-300 */
-  --color-cyan-400: #2dd4bf; /* teal-400 */
-  --color-cyan-500: #14b8a6; /* teal-500 - Turquoise */
-  --color-cyan-900: #0f766e; /* teal-700 */
-  --color-cyan-950: #042f2e; /* teal-950 */
+  --color-cyan-300: #a7f3d0;
+  --color-cyan-400: #6ee7b7;
+  --color-cyan-500: #34d399;
+  --color-cyan-900: #064e3b;
+  --color-cyan-950: #022c22;
   
-  --color-indigo-500: #0d9488; /* teal-600 */
-  --color-indigo-600: #0f766e; /* teal-700 */
+  --color-indigo-500: #0ea5e9;
+  --color-indigo-600: #0284c7;
   
   --color-rose-400: #f43f5e;
   --color-rose-500: #e11d48;
-  --color-rose-700: #be123c;
-  --color-rose-950: #881337;
 }
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #f0fdfa; /* Very light turquoise/white */
-    color: #134e4a; /* Dark turquoise text */
+    /* The requested vibrant turquoise background */
+    background: linear-gradient(135deg, #40E0D0 0%, #20B2AA 100%);
+    background-attachment: fixed;
+    color: #ffffff;
   }
 
   code, pre {
@@ -29,64 +29,62 @@
   }
 }
 
-/* Force Light Theme Text Colors */
-.text-white, .text-slate-50, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
-  color: #134e4a !important; /* Dark turquoise text */
+/* Override text colors to be crisp white */
+.text-slate-400, .text-slate-300, .text-slate-200, .text-slate-50, .text-slate-100 {
+  color: rgba(255, 255, 255, 0.9) !important;
 }
-
-/* Maintain white text on buttons and colored badges where needed */
-button .text-white, .bg-cyan-500 .text-white, .bg-rose-500 .text-white, .bg-teal-500 .text-white, .bg-blue-500 .text-white {
+.text-white {
+  color: #ffffff !important;
+}
+.text-cyan-400, .text-cyan-300 {
   color: #ffffff !important;
 }
 
-/* Force Light Theme Backgrounds */
-.bg-slate-950, .bg-slate-900, .bg-slate-800 {
-  background-color: #ffffff !important;
-}
-
-/* Force Light Theme Borders */
-.border-slate-800, .border-slate-700, .border-slate-600 {
-  border-color: #ccfbf1 !important; /* Light turquoise border */
-}
-
-/* Standard Enterprise Panels (Turquoise/White) */
+/* White Glassmorphism Panels */
 .glass-panel {
-  background: #ffffff !important;
-  border: 1px solid #99f6e4 !important; /* teal-200 */
-  box-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.1), 0 2px 4px -1px rgba(20, 184, 166, 0.06);
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1) !important;
 }
 
 .glass-panel-hover {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 .glass-panel-hover:hover {
-  background: #f0fdfa !important;
-  border-color: #5eead4 !important;
-  box-shadow: 0 10px 15px -3px rgba(20, 184, 166, 0.1);
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.15) !important;
 }
 
+/* Override dark UI elements to white glass */
+.bg-slate-950, .bg-slate-900, .bg-slate-800 {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+.border-slate-800, .border-slate-700, .border-slate-600 {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Specific Emergency Cards */
 .glass-card-danger {
-  background: #fff1f2 !important;
-  border: 1px solid #fecdd3 !important;
-  box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.1);
+  background: rgba(225, 29, 72, 0.2) !important;
+  border: 1px solid rgba(225, 29, 72, 0.4) !important;
 }
 
 .glass-card-success {
-  background: #f0fdf4 !important;
-  border: 1px solid #bbf7d0 !important;
-  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.1);
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
 }
 
 .glass-card-warning {
-  background: #fffbeb !important;
-  border: 1px solid #fde68a !important;
-  box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1);
+  background: rgba(245, 158, 11, 0.2) !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
 }
 
 .glass-card-accent {
-  background: #f0fdfa !important;
-  border: 1px solid #99f6e4 !important;
-  box-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.1);
+  background: rgba(255, 255, 255, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Radar & Pulsing Animations */
