@@ -35,12 +35,13 @@ export default function App() {
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [selectedIncidentForChat, setSelectedIncidentForChat] = useState(null);
 
-  const fetchData = async (isInitial = false) => {
+  const fetchData = async (isInitial = false, userLat = null, userLon = null) => {
     try {
       if (isInitial) setLoading(true);
+      const resParams = (userLat && userLon) ? { lat: userLat, lon: userLon } : {};
       const [incRes, resRes, anaRes] = await Promise.all([
         axios.get('/api/incidents'),
-        axios.get('/api/resources'),
+        axios.get('/api/resources', { params: resParams }),
         axios.get('/api/analytics')
       ]);
       setIncidents(incRes.data || []);
@@ -55,7 +56,17 @@ export default function App() {
 
   useEffect(() => {
     window.refreshLifeGridData = () => fetchData(false);
-    fetchData(true);
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => fetchData(true, pos.coords.latitude, pos.coords.longitude),
+        () => fetchData(true),
+        { timeout: 4000 }
+      );
+    } else {
+      fetchData(true);
+    }
+
     const safetyTimer = setTimeout(() => setLoading(false), 1500);
     const interval = setInterval(() => {
       fetchData(false);

@@ -62,14 +62,51 @@ function MapRecenter({ center }) {
 }
 
 export default function LiveMap({ incidents = [], resources = [], selectedIncident = null, onSelectIncident }) {
-  const centerLat = selectedIncident ? selectedIncident.latitude : 16.5062;
-  const centerLng = selectedIncident ? selectedIncident.longitude : 80.6480;
+  const [userCoords, setUserCoords] = React.useState(null);
+
+  React.useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {},
+        { timeout: 4000 }
+      );
+    }
+  }, []);
+
+  // Center priority: Selected Incident > User Live GPS > Fallback Coordinates
+  const centerLat = selectedIncident ? selectedIncident.latitude : (userCoords ? userCoords.lat : 16.5062);
+  const centerLng = selectedIncident ? selectedIncident.longitude : (userCoords ? userCoords.lng : 80.6480);
+
+  const userIcon = L.divIcon({
+    className: 'custom-user-location-marker',
+    html: `
+      <div style="
+        background: #0284c7;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 0 20px #38bdf8;
+        border: 3px solid white;
+        transform: translate(-50%, -50%);
+        animation: pulse 2s infinite;
+      ">
+        📍
+      </div>
+    `,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19]
+  });
 
   return (
     <div className="relative w-full h-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
       <MapContainer
         center={[centerLat, centerLng]}
-        zoom={13}
+        zoom={userCoords || selectedIncident ? 14 : 13}
         scrollWheelZoom={true}
         className="w-full h-full"
       >
@@ -79,6 +116,17 @@ export default function LiveMap({ incidents = [], resources = [], selectedIncide
         />
 
         <MapRecenter center={[centerLat, centerLng]} />
+
+        {/* Live User Location Marker */}
+        {userCoords && (
+          <Marker position={[userCoords.lat, userCoords.lng]} icon={userIcon}>
+            <Popup>
+              <div className="p-1 text-center font-bold text-xs text-cyan-300">
+                📍 YOU ARE HERE (Live Citizen GPS Telemetry)
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {/* Heatmap/Risk Circles for Flood Incidents */}
         {incidents.filter(i => i.category === 'Flood').map((inc) => (

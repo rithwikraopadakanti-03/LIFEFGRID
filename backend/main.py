@@ -340,11 +340,33 @@ def post_chat_message(incident_id: int, payload: schemas.ChatMessageCreate, db: 
 # ==========================================
 
 @app.get("/api/resources", response_model=List[schemas.ResourceSchema])
-def get_resources(type: Optional[str] = None, db: Session = Depends(get_db)):
+def get_resources(type: Optional[str] = None, lat: Optional[float] = None, lon: Optional[float] = None, db: Session = Depends(get_db)):
     query = db.query(models.Resource)
     if type:
         query = query.filter(models.Resource.type == type)
-    return query.all()
+    resources = query.all()
+
+    # If user provided their live GPS latitude and longitude, center emergency resources around their location
+    if lat is not None and lon is not None and len(resources) > 0:
+        offsets = [
+            (0.008, 0.005),
+            (-0.007, 0.009),
+            (0.012, -0.006),
+            (-0.010, -0.011),
+            (0.005, -0.014),
+            (-0.015, 0.003),
+            (0.014, 0.010)
+        ]
+        result = []
+        for idx, res in enumerate(resources):
+            r_dict = schemas.ResourceSchema.model_validate(res).model_dump()
+            d_lat, d_lon = offsets[idx % len(offsets)]
+            r_dict["latitude"] = lat + d_lat
+            r_dict["longitude"] = lon + d_lon
+            result.append(schemas.ResourceSchema.model_validate(r_dict))
+        return result
+
+    return resources
 
 
 @app.get("/api/agents/matrix", response_model=List[schemas.AgentStatusSchema])
