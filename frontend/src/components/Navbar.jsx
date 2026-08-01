@@ -47,9 +47,7 @@ export default function Navbar({
         
         {/* Logo & Brand */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-700/60 text-rose-400 shadow-md">
-            <ShieldAlert className="w-5 h-5 animate-pulse" />
-          </div>
+          <img src="/logo.jpg" alt="LifeGrid AI Logo" className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-black text-xl text-slate-100 tracking-tight">

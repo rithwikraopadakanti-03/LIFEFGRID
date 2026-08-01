@@ -97,10 +97,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             <X className="w-5 h-5" />
           </button>
 
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 mx-auto mb-3 shadow-lg shadow-cyan-500/30 flex items-center justify-center">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <ShieldAlert className="w-6 h-6 text-cyan-400" />
-            </div>
+          <div className="w-16 h-16 mx-auto mb-3">
+            <img src="/logo.jpg" alt="LifeGrid AI Logo" className="w-full h-full rounded-2xl object-cover shadow-lg shadow-cyan-500/20 border border-slate-700" />
           </div>
 
           <h3 className="font-extrabold text-xl text-white">LifeGrid AI Portal Login</h3>
