@@ -89,7 +89,7 @@ export default function App() {
   useEffect(() => {
     const critical = incidents.filter(i => i.urgency === 'CRITICAL' && i.status !== 'RESOLVED');
     if (incidents.length > prevIncidentCount && prevIncidentCount > 0) {
-      toast.critical(`New emergency reported! ${incidents[0]?.title || 'Incident'} — AI verification in progress.`);
+      toast.critical(`New emergency reported! ${incidents[0]?.title || 'Incident'} — Instant dispatch initiated.`);
     }
     setPrevIncidentCount(incidents.length);
   }, [incidents.length]);
