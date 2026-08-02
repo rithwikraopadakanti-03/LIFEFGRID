@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ShieldAlert } from 'lucide-react';
 import axios from 'axios';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
@@ -27,11 +28,24 @@ export default function App() {
   const [analytics, setAnalytics] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // User State: Default to null so Auth Modal opens immediately
-  const [currentUser, setCurrentUser] = useState(null);
+  // User State: Restore from localStorage if authenticated
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lifegrid_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
 
-  // Modals: Open Login/Register Portal Modal automatically on load
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(true);
+  // Modals: Open Login/Register Portal Modal only if user is not authenticated
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(() => {
+    try {
+      return !localStorage.getItem("lifegrid_user");
+    } catch (e) {
+      return true;
+    }
+  });
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -192,7 +206,7 @@ export default function App() {
                   <div className="flex items-center justify-between">
                     <span className="text-2xl">{portal.icon}</span>
                     <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300 group-hover:text-rose-400">
-                      Sign In $\rightarrow$
+                      Sign In →
                     </span>
                   </div>
                   <h3 className="font-extrabold text-sm text-white">{portal.title}</h3>
@@ -343,6 +357,7 @@ export default function App() {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         onIncidentCreated={handleIncidentCreated}
+        currentUser={currentUser}
       />
 
       <VoiceAiModal

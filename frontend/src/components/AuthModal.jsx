@@ -28,12 +28,20 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       }
       onClose();
     } catch (err) {
-      // Fallback synthetic login if server restart is in progress
+      // Fallback synthetic login with unique user details for each preset
+      const demoDetails = {
+        'citizen@lifegrid.ai': { full_name: 'Citizen User', phone: '+91 8121985059', address: 'Flat 402, Riverbank Apartments, Ward 11' },
+        'fire@lifegrid.ai': { full_name: 'Fire & Rescue Command Chief', phone: '101', address: 'District Main Fire Station HQ' },
+        'police@lifegrid.ai': { full_name: 'Police Control Room Chief', phone: '100', address: 'Central Police Commissionerate' },
+        'ambulance@lifegrid.ai': { full_name: 'ALS Ambulance 108 Dispatch Lead', phone: '108', address: 'ALS Unit 108 Fleet Base' }
+      }[demoEmail] || { full_name: `${demoDept || demoRole} Officer`, phone: '100', address: 'Command HQ' };
+
       const fakeUser = {
-        id: 99,
+        id: Math.floor(Math.random() * 1000) + 10,
         email: demoEmail,
-      full_name: demoRole === 'CITIZEN' ? 'Registered Citizen' : `${demoDept} Duty Officer`,
-        phone: "+91 98765 43210",
+        full_name: demoDetails.full_name,
+        phone: demoDetails.phone,
+        address: demoDetails.address,
         role: demoRole,
         team_department: demoDept
       };
@@ -55,7 +63,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         email,
         password,
         full_name: fullName || "Registered User",
-        phone: phone || "+918121985059",
+        phone: phone || "+91 98765 43210",
         role: authMode,
         team_department: authMode === 'EMERGENCY_TEAM' ? teamDepartment : null
       } : { email, password };
@@ -70,10 +78,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       const registeredUser = {
         id: Math.floor(Math.random() * 1000) + 100,
         email: email,
-        full_name: fullName || "Registered User",
-        phone: phone || "+918121985059",
+        full_name: fullName || (email.includes('@') ? email.split('@')[0] : "Registered User"),
+        phone: phone || "+91 98765 43210",
         role: authMode,
-        team_department: authMode === 'EMERGENCY_TEAM' ? teamDepartment : null
+        team_department: authMode === 'EMERGENCY_TEAM' ? teamDepartment : null,
+        address: "Registered User Location"
       };
       if (onLoginSuccess) {
         onLoginSuccess(registeredUser, "auth_token_registered");

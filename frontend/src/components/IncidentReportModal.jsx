@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Upload, Mic, MapPin, AlertTriangle, ShieldCheck, CheckCircle2, Sparkles, Navigation, Locate } from 'lucide-react';
 import axios from 'axios';
 
-export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated }) {
+export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated, currentUser }) {
   const [category, setCategory] = useState('Flood');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -11,7 +11,7 @@ export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated
   const [longitude, setLongitude] = useState(80.6455);
   const [address, setAddress] = useState('Detecting GPS location...');
   const [detectingGps, setDetectingGps] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState('https://images.unsplash.com/photo-1547683905-f686c993aae5?q=80&w=800&auto=format&fit=crop');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [voiceTranscript, setVoiceTranscript] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,10 +73,8 @@ export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated
 
   const handleRecordVoice = () => {
     if (isRecording) {
-      // Stop recording
       if (window._lifegridRecognition) {
         window._lifegridRecognition.stop();
-        window._lifegridRecognition = null;
       }
       setIsRecording(false);
       return;
@@ -126,7 +124,13 @@ export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated
       window._lifegridRecognition = null;
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err);
+      setIsRecording(false);
+      alert('Could not start voice recording. Please ensure microphone permission is granted.');
+    }
   };
 
   const handleVerifyFirst = async () => {
@@ -166,8 +170,9 @@ export default function IncidentReportModal({ isOpen, onClose, onIncidentCreated
         urgency,
         photo_url: photoUrl,
         voice_transcript: voiceTranscript,
-        reporter_name: "Citizen Reporter",
-        reporter_phone: "+91 98765 43210"
+        reporter_name: currentUser?.full_name || "Citizen Reporter",
+        reporter_phone: currentUser?.phone || "+91 98765 43210",
+        user_id: currentUser?.id || null
       });
 
       if (onIncidentCreated) {

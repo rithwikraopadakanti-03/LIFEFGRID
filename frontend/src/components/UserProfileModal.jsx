@@ -62,7 +62,7 @@ export default function UserProfileModal({ isOpen, onClose, currentUser, onLogou
               <Phone className="w-4 h-4 text-cyan-400 shrink-0" />
               <span className="font-semibold">Phone:</span>
             </div>
-            <span className="font-mono text-slate-100 font-bold">{currentUser.phone || '+91 8121985059'}</span>
+            <span className="font-mono text-slate-100 font-bold">{currentUser.phone || 'Not Provided'}</span>
           </div>
 
           {!isCitizen && (
@@ -81,7 +81,7 @@ export default function UserProfileModal({ isOpen, onClose, currentUser, onLogou
               <span className="font-semibold">Registered Location / Address:</span>
             </div>
             <p className="text-slate-200 font-mono text-[11px] leading-relaxed pl-6">
-              {currentUser.address || 'Krishna River Basin Metro Zone, Ward 11'}
+              {currentUser.address || 'Registered District Metro Sector'}
             </p>
           </div>
 

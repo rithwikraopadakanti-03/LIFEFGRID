@@ -267,8 +267,9 @@ export default function VoiceAiModal({ isOpen, onClose, currentUser = null, targ
             </select>
 
             <button onClick={() => setIsMuted(m => !m)}
+              title={isMuted ? "Unmute AI Voice" : "Mute AI Voice"}
               className={`p-2 rounded-lg cursor-pointer ${isMuted ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
-              {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isMuted ? <MicOff className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
 
             {/* End Call */}
