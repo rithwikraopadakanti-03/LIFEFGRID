@@ -282,7 +282,7 @@ export default function CitizenPortal({
 
     const triggerSosApi = async (lat, lon) => {
       try {
-        await axios.post('/api/incidents/sos', {
+        const res = await axios.post('/api/incidents/sos', {
           latitude: lat,
           longitude: lon,
           reporter_name: currentUser?.full_name || "Anonymous Citizen",
@@ -290,6 +290,7 @@ export default function CitizenPortal({
         });
         setSosActive(true);
         if (window.refreshLifeGridData) window.refreshLifeGridData();
+        if (onOpenVoiceModal) onOpenVoiceModal(res.data);
       } catch (e) {
         console.error("SOS failed", e);
         setSosActive(true);
@@ -409,12 +410,26 @@ export default function CitizenPortal({
 
               <button
                 onClick={() => onOpenVoiceModal && onOpenVoiceModal(myIncident)}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-green-600/30 border border-green-400/50 animate-pulse"
               >
-                <PhoneCall className="w-4 h-4 text-indigo-400" />
-                <span>Voice AI Guide</span>
+                <PhoneCall className="w-4 h-4 text-white" />
+                <span>📞 Receive Voice AI Call</span>
               </button>
             </div>
+          </div>
+
+          {/* AI Verified Voice Callout Banner */}
+          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5 text-emerald-300 font-semibold">
+              <Zap className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
+              <span>AI Verification Complete! Voice AI Assistant is ready to conduct your triage call.</span>
+            </div>
+            <button
+              onClick={() => onOpenVoiceModal && onOpenVoiceModal(myIncident)}
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs hover:bg-emerald-400 cursor-pointer shrink-0 transition-all shadow-md"
+            >
+              Accept Voice Call Now →
+            </button>
           </div>
 
           {/* Stepper Flow */}
