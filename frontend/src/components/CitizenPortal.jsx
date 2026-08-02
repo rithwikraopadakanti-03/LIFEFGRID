@@ -281,6 +281,9 @@ export default function CitizenPortal({
   const handleCallMobile = async () => {
     const targetPhone = currentUser?.phone || "+918121985059";
     setMobileCallStatus(`Dialing ${targetPhone}...`);
+    if (onOpenVoiceModal) {
+      onOpenVoiceModal(myIncident);
+    }
     try {
       await axios.post('/api/dispatch/call-mobile', { phone: targetPhone });
       setMobileCallStatus(`✅ Emergency Voice Call dispatched to ${targetPhone}! Your phone will ring.`);
