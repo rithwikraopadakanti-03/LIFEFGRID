@@ -45,6 +45,8 @@ Be empathetic, calm, concise, and ultra-clear."""
     payload = {
         "agent_id": OMNIDIMENSION_AGENT_ID,
         "to_number": to_phone,
+        "country_code": "+91",
+        "region": "IN",
         "prompt": emergency_prompt,
         "first_sentence": "Emergency SOS Alert! LifeGrid AI Emergency Command Center here. We received your emergency signal. What is your emergency situation?",
         "custom_variables": {
