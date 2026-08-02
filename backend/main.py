@@ -163,6 +163,7 @@ class PhoneCallRequest(BaseModel):
     phone: Optional[str] = "+918121985059"
 
 @app.post("/api/dispatch/call-mobile")
+@app.post("/dispatch/call-mobile")
 async def trigger_mobile_phone_call(
     background_tasks: BackgroundTasks,
     payload: Optional[PhoneCallRequest] = None
@@ -180,6 +181,7 @@ async def trigger_mobile_phone_call(
     return {"status": "DISPATCHED", "phone": phone_num, "message": f"Emergency voice call dispatched to {phone_num}"}
 
 @app.post("/api/incidents/sos", response_model=schemas.IncidentResponse)
+@app.post("/incidents/sos", response_model=schemas.IncidentResponse)
 async def trigger_quick_sos(
     background_tasks: BackgroundTasks,
     payload: Optional[schemas.SOSRequest] = None,
