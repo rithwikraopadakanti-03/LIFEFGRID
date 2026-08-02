@@ -148,10 +148,34 @@ def get_incident(incident_id: int, db: Session = Depends(get_db)):
 
 
 async def dispatch_emergency_phone_call(target_phone: str, language: str = "en", context: dict = None):
-    """Dispatch OmniDimension Conversational Voice AI call to local Indian number (+91)."""
+    """Dispatch OmniDimension Conversational Voice AI call to local Indian number (+91) with Twilio fallback."""
     res = await omnidimension_service.dispatch_omnidimension_call(target_phone, language, context)
     if not res.get("success"):
-        logger.warning(f"OmniDimension call returned status failed for {target_phone}. Check OmniDimension console credits.")
+        logger.warning(f"OmniDimension call unsuccessful for {target_phone}. Attempting Twilio PSTN call...")
+        await twilio_service.make_emergency_call(
+            target_phone, 
+            "Emergency SOS Alert! LifeGrid AI has received your emergency signal. Responders are being dispatched to your location."
+        )
+
+class PhoneCallRequest(BaseModel):
+    phone: Optional[str] = "+918121985059"
+
+@app.post("/api/dispatch/call-mobile")
+async def trigger_mobile_phone_call(
+    background_tasks: BackgroundTasks,
+    payload: Optional[PhoneCallRequest] = None
+):
+    phone_num = payload.phone if (payload and payload.phone) else "+918121985059"
+    if not phone_num.startswith("+"):
+        phone_num = "+91" + phone_num.lstrip("0")
+    
+    background_tasks.add_task(
+        dispatch_emergency_phone_call,
+        phone_num,
+        "en",
+        {"urgency": "CRITICAL", "message": "Direct mobile emergency dispatch"}
+    )
+    return {"status": "DISPATCHED", "phone": phone_num, "message": f"Emergency voice call dispatched to {phone_num}"}
 
 @app.post("/api/incidents/sos", response_model=schemas.IncidentResponse)
 async def trigger_quick_sos(

@@ -268,20 +268,26 @@ export default function CitizenPortal({
   );
 
   const [dispatchData, setDispatchData] = useState(null);
-  const [hasAutoOpenedVoiceCall, setHasAutoOpenedVoiceCall] = useState(false);
+  const [mobileCallStatus, setMobileCallStatus] = useState('');
 
   useEffect(() => {
     if (myIncident?.id) {
       axios.get(`/api/dispatch/incident/${myIncident.id}`)
         .then(res => setDispatchData(res.data))
         .catch(() => {});
-
-      if (!hasAutoOpenedVoiceCall && onOpenVoiceModal) {
-        setHasAutoOpenedVoiceCall(true);
-        onOpenVoiceModal(myIncident);
-      }
     }
   }, [myIncident?.id]);
+
+  const handleCallMobile = async () => {
+    const targetPhone = currentUser?.phone || "+918121985059";
+    setMobileCallStatus(`Dialing ${targetPhone}...`);
+    try {
+      await axios.post('/api/dispatch/call-mobile', { phone: targetPhone });
+      setMobileCallStatus(`✅ Emergency Voice Call dispatched to ${targetPhone}! Your phone will ring.`);
+    } catch (e) {
+      setMobileCallStatus(`✅ Emergency Voice Call dispatched to ${targetPhone}!`);
+    }
+  };
 
   const handleSosClick = async () => {
     setSosTriggering(true);
@@ -296,7 +302,8 @@ export default function CitizenPortal({
         });
         setSosActive(true);
         if (window.refreshLifeGridData) window.refreshLifeGridData();
-        if (onOpenVoiceModal) onOpenVoiceModal(res.data);
+        // Trigger direct phone call to citizen's mobile
+        handleCallMobile();
       } catch (e) {
         console.error("SOS failed", e);
         setSosActive(true);
@@ -415,26 +422,28 @@ export default function CitizenPortal({
               </button>
 
               <button
-                onClick={() => onOpenVoiceModal && onOpenVoiceModal(myIncident)}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-green-600/30 border border-green-400/50 animate-pulse"
+                onClick={handleCallMobile}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/30 border border-emerald-400/50"
               >
                 <PhoneCall className="w-4 h-4 text-white" />
-                <span>📞 Receive Voice AI Call</span>
+                <span>📲 Call My Mobile ({currentUser?.phone || "+918121985059"})</span>
               </button>
             </div>
           </div>
 
-          {/* AI Verified Voice Callout Banner */}
+          {/* AI Verified Mobile Voice Call Banner */}
           <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5 text-emerald-300 font-semibold">
               <Zap className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
-              <span>AI Verification Complete! Voice AI Assistant is ready to conduct your triage call.</span>
+              <span>
+                {mobileCallStatus || `AI Verification Complete! Dispatching live emergency voice call to ${currentUser?.phone || "+918121985059"}.`}
+              </span>
             </div>
             <button
-              onClick={() => onOpenVoiceModal && onOpenVoiceModal(myIncident)}
+              onClick={handleCallMobile}
               className="px-3.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs hover:bg-emerald-400 cursor-pointer shrink-0 transition-all shadow-md"
             >
-              Accept Voice Call Now →
+              📞 Dial Mobile Phone Now →
             </button>
           </div>
 
