@@ -268,12 +268,18 @@ export default function CitizenPortal({
   );
 
   const [dispatchData, setDispatchData] = useState(null);
+  const [hasAutoOpenedVoiceCall, setHasAutoOpenedVoiceCall] = useState(false);
 
   useEffect(() => {
     if (myIncident?.id) {
       axios.get(`/api/dispatch/incident/${myIncident.id}`)
         .then(res => setDispatchData(res.data))
         .catch(() => {});
+
+      if (!hasAutoOpenedVoiceCall && onOpenVoiceModal) {
+        setHasAutoOpenedVoiceCall(true);
+        onOpenVoiceModal(myIncident);
+      }
     }
   }, [myIncident?.id]);
 
