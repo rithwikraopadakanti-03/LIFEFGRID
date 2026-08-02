@@ -148,14 +148,15 @@ def get_incident(incident_id: int, db: Session = Depends(get_db)):
 
 
 async def dispatch_emergency_phone_call(target_phone: str, language: str = "en", context: dict = None):
-    """Dispatch OmniDimension Conversational Voice AI call to local Indian number (+91) with Twilio fallback."""
-    res = await omnidimension_service.dispatch_omnidimension_call(target_phone, language, context)
-    if not res.get("success"):
-        logger.warning(f"OmniDimension call unsuccessful for {target_phone}. Attempting Twilio PSTN call...")
-        await twilio_service.make_emergency_call(
-            target_phone, 
-            "Emergency SOS Alert! LifeGrid AI has received your emergency signal. Responders are being dispatched to your location."
-        )
+    """Dispatch Twilio / OmniDimension call to citizen mobile number (+91)."""
+    # Trigger Twilio Call so citizen phone rings immediately
+    twilio_success = await twilio_service.make_emergency_call(
+        target_phone, 
+        "Emergency SOS Alert! LifeGrid AI Emergency Command System has received your signal. Responders are being dispatched to your location."
+    )
+    if not twilio_success:
+        await omnidimension_service.dispatch_omnidimension_call(target_phone, language, context)
+
 
 class PhoneCallRequest(BaseModel):
     phone: Optional[str] = "+918121985059"
