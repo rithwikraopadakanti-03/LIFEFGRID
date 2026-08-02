@@ -148,14 +148,10 @@ def get_incident(incident_id: int, db: Session = Depends(get_db)):
 
 
 async def dispatch_emergency_phone_call(target_phone: str, language: str = "en", context: dict = None):
-    """Attempt OmniDimension call, fallback to Twilio PSTN call."""
+    """Dispatch OmniDimension Conversational Voice AI call to local Indian number (+91)."""
     res = await omnidimension_service.dispatch_omnidimension_call(target_phone, language, context)
     if not res.get("success"):
-        logger.info(f"OmniDimension call unsuccessful for {target_phone}, attempting Twilio fallback call...")
-        await twilio_service.make_emergency_call(
-            target_phone, 
-            "Emergency SOS Alert! LifeGrid AI has received your emergency signal. Responders are being dispatched to your location."
-        )
+        logger.warning(f"OmniDimension call returned status failed for {target_phone}. Check OmniDimension console credits.")
 
 @app.post("/api/incidents/sos", response_model=schemas.IncidentResponse)
 async def trigger_quick_sos(
