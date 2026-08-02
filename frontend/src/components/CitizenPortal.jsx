@@ -10,6 +10,7 @@ import axios from 'axios';
 function MapFitBounds({ citizenPos, ambulancePos }) {
   const map = useMap();
   useEffect(() => {
+    map.invalidateSize();
     if (citizenPos && ambulancePos && L) {
       try {
         const bounds = L.latLngBounds([citizenPos, ambulancePos]);

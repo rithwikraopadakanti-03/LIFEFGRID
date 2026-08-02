@@ -54,6 +54,7 @@ const createCustomIcon = (type, category) => {
 function MapRecenter({ center }) {
   const map = useMap();
   useEffect(() => {
+    map.invalidateSize();
     if (center) {
       map.flyTo(center, 14, { duration: 1.5 });
     }
