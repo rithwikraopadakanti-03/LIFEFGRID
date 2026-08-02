@@ -14,7 +14,7 @@ if os.path.exists(env_path):
                 k, v = line.strip().split("=", 1)
                 os.environ[k.strip()] = v.strip()
 
-OMNIDIMENSION_API_KEY = os.getenv("OMNIDIMENSION_API_KEY", "ScsPyhuOsEHBMRHbe1mJ3bme_eo1B_zllDnVo4WbxvI")
+OMNIDIMENSION_API_KEY = os.getenv("OMNIDIMENSION_API_KEY", "wmZTJXwE9uQbXiiQ7FN9NvyAfKaGXxN2089IZeFth6o")
 OMNIDIMENSION_AGENT_ID = int(os.getenv("OMNIDIMENSION_AGENT_ID", "134874"))
 
 DEFAULT_TARGET_PHONE = "+918121985059"
