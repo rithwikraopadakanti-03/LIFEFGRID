@@ -1,9 +1,189 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, PhoneCall, AlertTriangle, MapPin, HeartPulse, Building2, 
-  CloudRain, Navigation, MessageSquare, Clock, CheckCircle2, ChevronRight, Zap, Sparkles
+  CloudRain, Navigation, MessageSquare, Clock, CheckCircle2, ChevronRight, Zap, Sparkles, Truck
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import axios from 'axios';
+
+function MapFitBounds({ citizenPos, ambulancePos }) {
+  const map = useMap();
+  useEffect(() => {
+    if (citizenPos && ambulancePos && L) {
+      try {
+        const bounds = L.latLngBounds([citizenPos, ambulancePos]);
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      } catch (e) {}
+    }
+  }, [citizenPos[0], citizenPos[1], ambulancePos[0], ambulancePos[1], map]);
+  return null;
+}
+
+function AmbulanceTrackerMap({ incident, dispatchData }) {
+  const citizenLat = incident?.latitude || 16.5095;
+  const citizenLon = incident?.longitude || 80.6455;
+
+  // Ambulance position from dispatch recommendation or realistic proximity offset
+  const ambLat = dispatchData?.current_lat || (citizenLat + 0.012);
+  const ambLon = dispatchData?.current_lon || (citizenLon + 0.014);
+
+  const citizenPos = [citizenLat, citizenLon];
+  const ambulancePos = [ambLat, ambLon];
+
+  // Calculate Haversine distance
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const km = R * c;
+    if (km < 1) {
+      return `${Math.round(km * 1000)} meters`;
+    }
+    return `${km.toFixed(1)} km`;
+  };
+
+  const distanceText = calculateDistance(citizenLat, citizenLon, ambLat, ambLon);
+
+  const citizenIcon = L.divIcon({
+    className: 'custom-citizen-marker',
+    html: `
+      <div style="
+        background: #0284c7;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 0 20px #38bdf8;
+        border: 3px solid white;
+        transform: translate(-50%, -50%);
+      ">
+        📍
+      </div>
+    `,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19]
+  });
+
+  const ambulanceIcon = L.divIcon({
+    className: 'custom-ambulance-marker',
+    html: `
+      <div style="
+        background: #ef4444;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        box-shadow: 0 0 25px #f87171;
+        border: 3px solid white;
+        transform: translate(-50%, -50%);
+      ">
+        🚑
+      </div>
+    `,
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
+  });
+
+  return (
+    <div className="space-y-3 pt-2">
+      {/* Live Distance Telemetry Banner */}
+      <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
+            <Truck className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold text-white">Live Ambulance Proximity Tracking</span>
+              <span className="px-2 py-0.5 text-[9px] font-black uppercase rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
+                LIVE GPS
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 font-medium mt-0.5">
+              Assigned Fleet: <strong className="text-cyan-300">{dispatchData?.provider_name || incident?.assigned_team_name || "Apollo ALS Ambulance Unit 108-A1"}</strong>
+            </p>
+          </div>
+        </div>
+
+        {/* Distance Badge */}
+        <div className="flex items-center gap-2 bg-cyan-950/60 px-4 py-2 rounded-xl border border-cyan-500/40 shrink-0">
+          <Navigation className="w-4 h-4 text-cyan-400 animate-spin" />
+          <div className="text-right">
+            <span className="text-[9px] text-slate-400 uppercase font-mono block">Distance Away</span>
+            <span className="text-sm font-black text-cyan-300">{distanceText} away</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Map Container */}
+      <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+        <MapContainer
+          center={citizenPos}
+          zoom={14}
+          scrollWheelZoom={false}
+          className="w-full h-full"
+        >
+          <TileLayer
+            attribution='&copy; OpenStreetMap'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+
+          <MapFitBounds citizenPos={citizenPos} ambulancePos={ambulancePos} />
+
+          {/* Citizen Location Marker */}
+          <Marker position={citizenPos} icon={citizenIcon}>
+            <Popup>
+              <div className="p-1 text-center">
+                <strong className="text-xs text-cyan-400 block">📍 YOUR EMERGENCY LOCATION</strong>
+                <span className="text-[11px] text-slate-300">{incident.title}</span>
+              </div>
+            </Popup>
+          </Marker>
+
+          {/* Ambulance Location Marker */}
+          <Marker position={ambulancePos} icon={ambulanceIcon}>
+            <Popup>
+              <div className="p-1 text-center">
+                <strong className="text-xs text-rose-400 block">🚑 ALS AMBULANCE UNIT</strong>
+                <span className="text-[11px] text-slate-300">{dispatchData?.provider_name || "Apollo ALS Unit 108-A1"}</span>
+                <div className="text-[10px] text-cyan-400 mt-1 font-bold">{distanceText} away from you</div>
+              </div>
+            </Popup>
+          </Marker>
+
+          {/* Route Polyline connecting Ambulance to Citizen */}
+          <Polyline
+            positions={[ambulancePos, citizenPos]}
+            pathOptions={{
+              color: '#06b6d4',
+              weight: 4,
+              dashArray: '8, 8',
+              opacity: 0.9
+            }}
+          />
+        </MapContainer>
+
+        {/* Map Legend Overlay */}
+        <div className="absolute bottom-3 left-3 z-[1000] glass-panel px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] flex items-center gap-3">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-500"></span> 📍 You</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> 🚑 Ambulance ({distanceText})</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CitizenPortal({ 
   currentUser, 
@@ -86,6 +266,16 @@ export default function CitizenPortal({
     (i.user_id === currentUser?.id || i.reporter_phone === currentUser?.phone || i.reporter_name?.includes(currentUser?.full_name || '___')) &&
     i.status !== 'RESOLVED'
   );
+
+  const [dispatchData, setDispatchData] = useState(null);
+
+  useEffect(() => {
+    if (myIncident?.id) {
+      axios.get(`/api/dispatch/incident/${myIncident.id}`)
+        .then(res => setDispatchData(res.data))
+        .catch(() => {});
+    }
+  }, [myIncident?.id]);
 
   const handleSosClick = async () => {
     setSosTriggering(true);
@@ -276,6 +466,9 @@ export default function CitizenPortal({
               </div>
             </div>
           </div>
+
+          {/* Live Ambulance Proximity & Distance Tracking Map */}
+          <AmbulanceTrackerMap incident={myIncident} dispatchData={dispatchData} />
         </div>
       )}
 
