@@ -71,13 +71,22 @@ export default function Navbar({
               title="Click to view User Details & Profile"
               className="flex items-center gap-2 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800 hover:border-cyan-500/60 text-xs cursor-pointer transition-all group"
             >
+              {currentUser.profile_photo_url ? (
+                <img
+                  src={currentUser.profile_photo_url}
+                  alt={currentUser.full_name}
+                  className="w-7 h-7 rounded-lg object-cover border border-cyan-400/80 group-hover:scale-105 transition-transform"
+                />
+              ) : null}
               <div className="flex flex-col text-left">
                 <span className="font-bold text-slate-100 leading-tight group-hover:text-cyan-300">{currentUser.full_name}</span>
                 <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wide">
                   {currentUser.role === 'CITIZEN' ? 'Citizen' : `${currentUser.team_department} Department`}
                 </span>
               </div>
-              <User className="w-4 h-4 text-cyan-400 ml-1 group-hover:scale-110 transition-transform" />
+              {!currentUser.profile_photo_url && (
+                <User className="w-4 h-4 text-cyan-400 ml-1 group-hover:scale-110 transition-transform" />
+              )}
             </div>
           ) : (
             <button

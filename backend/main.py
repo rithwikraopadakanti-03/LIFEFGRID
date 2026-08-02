@@ -98,7 +98,8 @@ def register_user(payload: schemas.UserCreate, db: Session = Depends(get_db)):
         phone=payload.phone,
         role=payload.role or "CITIZEN",
         team_department=payload.team_department,
-        address=payload.address or "Registered Location"
+        address=payload.address or "Registered Location",
+        profile_photo_url=payload.profile_photo_url
     )
     db.add(new_user)
     db.commit()

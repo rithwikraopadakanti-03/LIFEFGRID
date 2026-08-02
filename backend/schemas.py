@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     role: Optional[str] = "CITIZEN"  # CITIZEN, EMERGENCY_TEAM
     team_department: Optional[str] = None  # POLICE, FIRE, AMBULANCE, DISASTER_RESPONSE, HOSPITAL, MUNICIPALITY
     address: Optional[str] = None
+    profile_photo_url: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: str
@@ -23,6 +24,7 @@ class UserResponse(BaseModel):
     role: str
     team_department: Optional[str]
     address: Optional[str]
+    profile_photo_url: Optional[str] = None
     created_at: datetime
 
     class Config:

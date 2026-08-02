@@ -9,6 +9,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState('');
   const [teamDepartment, setTeamDepartment] = useState('FIRE'); // POLICE, FIRE, AMBULANCE, DISASTER_RESPONSE, HOSPITAL, MUNICIPALITY
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -65,7 +66,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         full_name: fullName || "Registered User",
         phone: phone || "+91 98765 43210",
         role: authMode,
-        team_department: authMode === 'EMERGENCY_TEAM' ? teamDepartment : null
+        team_department: authMode === 'EMERGENCY_TEAM' ? teamDepartment : null,
+        profile_photo_url: profilePhotoUrl
       } : { email, password };
 
       const res = await axios.post(endpoint, payload);
@@ -82,7 +84,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         phone: phone || "+91 98765 43210",
         role: authMode,
         team_department: authMode === 'EMERGENCY_TEAM' ? teamDepartment : null,
-        address: "Registered User Location"
+        address: "Registered User Location",
+        profile_photo_url: profilePhotoUrl
       };
       if (onLoginSuccess) {
         onLoginSuccess(registeredUser, "auth_token_registered");
@@ -195,6 +198,40 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                   placeholder="+91 98765 43210"
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Profile Photo (Optional)
+                </label>
+                <div className="flex items-center gap-3">
+                  {profilePhotoUrl ? (
+                    <img
+                      src={profilePhotoUrl}
+                      alt="Preview"
+                      className="w-10 h-10 rounded-xl object-cover border border-cyan-500 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 text-xs shrink-0 font-mono">
+                      📷
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setProfilePhotoUrl(reader.result);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/20 file:text-cyan-300 hover:file:bg-cyan-500/30 cursor-pointer"
+                  />
+                </div>
               </div>
             </>
           )}

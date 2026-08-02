@@ -14,6 +14,7 @@ class User(Base):
     role = Column(String, default="CITIZEN")  # CITIZEN, EMERGENCY_TEAM
     team_department = Column(String, nullable=True)  # POLICE, FIRE, AMBULANCE, DISASTER_RESPONSE, HOSPITAL, MUNICIPALITY
     address = Column(String, nullable=True)
+    profile_photo_url = Column(String, nullable=True)
     emergency_contacts = Column(JSON, default=list)
     created_at = Column(DateTime, default=datetime.utcnow)
 

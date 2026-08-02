@@ -13,9 +13,17 @@ export default function UserProfileModal({ isOpen, onClose, currentUser, onLogou
         {/* Top Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-              <User className="w-6 h-6" />
-            </div>
+            {currentUser.profile_photo_url ? (
+              <img
+                src={currentUser.profile_photo_url}
+                alt={currentUser.full_name || 'User Profile'}
+                className="w-14 h-14 rounded-2xl object-cover border-2 border-cyan-400/80 shadow-lg shadow-cyan-500/20"
+              />
+            ) : (
+              <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                <User className="w-6 h-6" />
+              </div>
+            )}
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-cyan-400 block">
                 User Details & Credentials
