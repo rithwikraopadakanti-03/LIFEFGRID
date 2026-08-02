@@ -18,7 +18,7 @@ export default function AICopilot({ currentUser }) {
   const [conversation, setConversation] = useState([
     {
       role: 'ai',
-      text: "LifeGrid AI Copilot online. I have full situational awareness of all active incidents, resources, weather, and health metrics. Ask me anything."
+      text: "LifeGrid AI online. I have full situational awareness of all active incidents, resources, weather, and health metrics. Ask me anything."
     }
   ]);
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ export default function AICopilot({ currentUser }) {
       const res = await axios.post('/api/copilot/ask', { question: text });
       setConversation(prev => [...prev, { role: 'ai', text: res.data.answer }]);
     } catch {
-      setConversation(prev => [...prev, { role: 'ai', text: "Copilot offline — backend connection error. Check system status." }]);
+      setConversation(prev => [...prev, { role: 'ai', text: "LifeGrid AI offline — backend connection error. Check system status." }]);
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function AICopilot({ currentUser }) {
           style={{ animation: 'copilot-pulse 3s ease-in-out infinite' }}
         >
           <Cpu className="w-4 h-4 text-cyan-300 group-hover:animate-spin" />
-          <span>AI Copilot</span>
+          <span>LifeGrid AI</span>
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         </button>
       )}
@@ -74,7 +74,7 @@ export default function AICopilot({ currentUser }) {
                 <Cpu className="w-4 h-4 text-cyan-300" />
               </div>
               <div>
-                <span className="text-xs font-extrabold text-white block">LifeGrid AI Copilot</span>
+                <span className="text-xs font-extrabold text-white block">LifeGrid AI Assistant</span>
                 <span className="text-[10px] text-indigo-300 font-mono">EOC Situational Intelligence</span>
               </div>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-1"></span>
