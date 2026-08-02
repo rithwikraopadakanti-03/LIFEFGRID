@@ -31,21 +31,14 @@ export default function VoiceAiModal({ isOpen, onClose, currentUser = null, targ
       setRingCount(0);
       setChatLog([]);
       setExtractedData(null);
-
-      // Auto-answer after 2 "rings" (1.5s) — simulate AI calling back
-      ringTimer.current = setTimeout(() => {
-        setPhase('connected');
-        const greeting = GREETINGS[language] || GREETINGS.en;
-        setChatLog([{ sender: 'ai', text: greeting }]);
-        speakText(greeting, language);
-      }, 2000);
-    } else {
-      clearTimeout(ringTimer.current);
+      // Cancel any leftover speech audio until user explicitly accepts call
       window.speechSynthesis?.cancel();
+    } else {
+      window.speechSynthesis?.cancel();
+      window._voiceAiRecognition?.stop();
       setPhase('ringing');
       setChatLog([]);
     }
-    return () => clearTimeout(ringTimer.current);
   }, [isOpen]);
 
   useEffect(() => {
